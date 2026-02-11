@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Engaja – Sistema</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Inter', Arial, sans-serif; }
+    body { margin: 0; background: #f4f6f8; color: #1f2933; }
+
+    :root {
+      --primary: #2563eb;      /* azul moderno */
+      --primary-dark: #1e40af;
+      --secondary: #111827;    /* quase preto */
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text-muted: #6b7280;
+    }
+
+    /* ---------- LOGIN ---------- */
+    .login-page {
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+    }
+
+    .login-box {
+      width: 360px;
+      background: var(--card);
+      padding: 36px;
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--primary);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    button {
+      padding: 12px 18px;
+      border-radius: 8px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover { background: var(--primary-dark); }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    button.secondary:hover { background: #d1d5db; }
+
+    /* ---------- APP LAYOUT ---------- */
+    .app { display: none; }
+
+    header {
+      background: var(--card);
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    nav a {
+      margin-left: 24px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    nav a:hover { color: var(--primary); }
+
+    .container {
+      padding: 32px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    section {
+      background: var(--card);
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.04);
+    }
+
+    h2 { margin-top: 0; }
+
+    h3, h4 { margin-top: 32px; }
+
+    /* ---------- TABLE ---------- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    th {
+      text-align: left;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding-bottom: 8px;
+    }
+
+    td {
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .actions button { margin-right: 8px; }
+
+    .hidden { display: none; }
+
+    /* ---------- TAG EMAILS ---------- */
+    .emails-list span {
+      display: inline-block;
+      background: #eff6ff;
+      color: var(--primary-dark);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin: 6px 6px 0 0;
+    }
+
+    /* ---------- NEWS ---------- */
+    .news-item {
+      border: 1px dashed var(--border);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <div class="logo">Engaja</div>
+    <input type="text" placeholder="Login" />
+    <input type="password" placeholder="Senha" />
+    <button onclick="login()">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <header>
+    <div class="logo">Engaja</div>
+    <nav>
+      <a onclick="showSection('empresas')">Empresas</a>
+      <a onclick="showSection('usuarios')">Usuários</a>
+      <a onclick="showSection('newsletter')">Newsletter</a>
+    </nav>
+  </header>
+
+  <div class="container">
+
+    <!-- EMPRESAS -->
+    <section id="empresas">
+      <h2>Empresas</h2>
+      <button>+ Nova Empresa</button>
+
+      <table>
+        <tr><th>Nome</th><th>Ações</th></tr>
+        <tr>
+          <td>Empresa Exemplo</td>
+          <td class="actions">
+            <button class="secondary">Editar</button>
+            <button>Excluir</button>
+          </td>
+        </tr>
+      </table>
+
+      <h3>Cadastro de Empresa</h3>
+      <input placeholder="Nome da Empresa" />
+      <input type="file" />
+      <input id="emailInput" placeholder="Digite um e-mail" />
+      <button class="secondary" onclick="addEmail()">Adicionar e-mail</button>
+      <div class="emails-list" id="emailsList"></div>
+    </section>
+
+    <!-- USUÁRIOS -->
+    <section id="usuarios" class="hidden">
+      <h2>Usuários</h2>
+      <table>
+        <tr><th>Nome</th><th>Email</th><th>Ações</th></tr>
+        <tr>
+          <td>Usuário Exemplo</td>
+          <td>email@exemplo.com</td>
+          <td class="actions">
+            <button class="secondary">Editar</button>
+            <button>Excluir</button>
+          </td>
+        </tr>
+      </table>
+
+      <h3>Cadastro de Usuário</h3>
+      <input placeholder="Nome" />
+      <input placeholder="Email" />
+      <input type="password" placeholder="Senha" />
+    </section>
+
+    <!-- NEWSLETTER -->
+    <section id="newsletter" class="hidden">
+      <h2>Newsletter</h2>
+      <table>
+        <tr><th>Empresa</th><th>Data de Envio</th></tr>
+        <tr><td>Empresa Exemplo</td><td>10/02/2026</td></tr>
+      </table>
+
+      <h3>Cadastro de Newsletter</h3>
+      <select>
+        <option>Selecione a Empresa</option>
+        <option>Empresa Exemplo</option>
+      </select>
+      <input type="date" />
+
+      <h4>Notícias</h4>
+      <div class="news-item">
+        <input placeholder="Título" />
+        <textarea placeholder="Descrição"></textarea>
+        <input placeholder="Portal" />
+        <input type="date" />
+        <input placeholder="Link da Notícia" />
+        <input type="file" />
+      </div>
+
+      <button class="secondary">Adicionar Notícia</button>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  function login() {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  }
+
+  function showSection(id) {
+    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  function addEmail() {
+    const input = document.getElementById('emailInput');
+    if (!input.value) return;
+    const span = document.createElement('span');
+    span.textContent = input.value;
+    document.getElementById('emailsList').appendChild(span);
+    input.value = '';
+  }
+</script>
+
+</body>
+</html>
