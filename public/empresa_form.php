@@ -33,24 +33,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // upload topo
     $newHeader = upload_image('header_image', UPLOAD_DIR_HEADERS);
 
-    $site = trim($_POST['site_url'] ?? '');
     $s1 = trim($_POST['social_1_url'] ?? '');
     $s2 = trim($_POST['social_2_url'] ?? '');
     $s3 = trim($_POST['social_3_url'] ?? '');
     $s4 = trim($_POST['social_4_url'] ?? '');
 
     if ($id) {
-      $sql = "UPDATE companies SET name=?, site_url=?, social_1_url=?, social_2_url=?, social_3_url=?, social_4_url=?"
+      $sql = "UPDATE companies SET name=?, social_1_url=?, social_2_url=?, social_3_url=?, social_4_url=?"
            . ($newHeader ? ", header_image_path=?" : "")
            . " WHERE id=?";
-      $params = [$name, $site ?: null, $s1 ?: null, $s2 ?: null, $s3 ?: null, $s4 ?: null];
+      $params = [$name, $s1 ?: null, $s2 ?: null, $s3 ?: null, $s4 ?: null];
       if ($newHeader) $params[] = $newHeader;
       $params[] = $id;
       $pdo->prepare($sql)->execute($params);
     } else {
-      $pdo->prepare("INSERT INTO companies (name, header_image_path, site_url, social_1_url, social_2_url, social_3_url, social_4_url)
+      $pdo->prepare("INSERT INTO companies (name, header_image_path, social_1_url, social_2_url, social_3_url, social_4_url)
                      VALUES (?,?,?,?,?,?,?)")
-          ->execute([$name, $newHeader, $site ?: null, $s1 ?: null, $s2 ?: null, $s3 ?: null, $s4 ?: null]);
+          ->execute([$name, $newHeader, $s1 ?: null, $s2 ?: null, $s3 ?: null, $s4 ?: null]);
       $id = (int)$pdo->lastInsertId();
     }
 
@@ -91,9 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <hr>
-
-    <label><small class="muted">Site (footer)</small></label>
-    <input name="site_url" value="<?= e($company['site_url'] ?? '') ?>" placeholder="https://...">
 
     <div class="row">
       <div>

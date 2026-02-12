@@ -38,10 +38,9 @@ if ($action === 'send_now') {
     if (count($recipients) === 0) throw new RuntimeException('A empresa não tem destinatários cadastrados.');
     if (count($items) === 0) throw new RuntimeException('A newsletter não tem notícias.');
 
-    $html = render_email_html($id);
+    $payload = render_email_send($id);
     $subject = "Radar de Notícias - " . ($n['company_name'] ?? 'Engaja');
-
-    send_newsletter_email($subject, $html, $recipients);
+    send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds']);
 
     $pdo->prepare("UPDATE newsletters SET status='sent', sent_at=NOW() WHERE id=?")->execute([$id]);
   } catch (Throwable $t) {

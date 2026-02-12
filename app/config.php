@@ -1,8 +1,7 @@
 <?php
 // app/config.php
 
-// Ajuste conforme seu ambiente
-define('APP_URL', 'http://localhost/engaja'); // IMPORTANTE: URL pública p/ links e imagens no email
+define('APP_URL', 'http://localhost/engaja');
 
 define('DB_HOST', '127.0.0.1');
 define('DB_NAME', 'engaja');
@@ -13,12 +12,12 @@ define('DB_PASS', '');
 define('UPLOAD_DIR_HEADERS', __DIR__ . '/../public/uploads/headers');
 define('UPLOAD_DIR_PDFS', __DIR__ . '/../public/uploads/pdfs');
 
-// Mail (SMTP) - ajuste com suas credenciais
-define('MAIL_HOST', 'smtp.seudominio.com');
+// Mail (SMTP)
+define('MAIL_HOST', 'smtp.gmail.com');
 define('MAIL_PORT', 587);
-define('MAIL_USER', 'seu_email@seudominio.com');
-define('MAIL_PASS', 'SUA_SENHA');
-define('MAIL_FROM_EMAIL', 'seu_email@seudominio.com');
+define('MAIL_USER', 'monitoramento@engajacomunicacao.com.br');
+define('MAIL_PASS', '@relations');
+define('MAIL_FROM_EMAIL', 'monitoramento@engajacomunicacao.com.br');
 define('MAIL_FROM_NAME', 'Engaja Comunicação');
 
 // Segurança

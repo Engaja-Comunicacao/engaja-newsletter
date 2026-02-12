@@ -27,7 +27,6 @@ CREATE TABLE companies (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(190) NOT NULL,
   header_image_path VARCHAR(255) NULL, -- ex: /uploads/headers/abc.png
-  site_url VARCHAR(255) NULL,
   social_1_url VARCHAR(255) NULL,
   social_2_url VARCHAR(255) NULL,
   social_3_url VARCHAR(255) NULL,

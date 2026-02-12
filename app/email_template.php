@@ -4,11 +4,15 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/config.php';
 
+function public_path(string $relative): string {
+  return realpath(__DIR__ . '/../public' . $relative) ?: (__DIR__ . '/../public' . $relative);
+}
+
 function get_newsletter_data(int $newsletterId): array {
   $pdo = db();
 
   $stmt = $pdo->prepare("
-    SELECT n.*, c.name AS company_name, c.header_image_path, c.site_url,
+    SELECT n.*, c.name AS company_name, c.header_image_path,
            c.social_1_url, c.social_2_url, c.social_3_url, c.social_4_url
     FROM newsletters n
     JOIN companies c ON c.id = n.company_id
@@ -34,11 +38,11 @@ function get_newsletter_data(int $newsletterId): array {
   return [$n, $items, $recipients];
 }
 
-function render_news_block(array $item): string {
+function render_news_block_web(array $item): string {
   $line = trim((format_ptbr_upper($item['news_date'] ?? null) ?: '') . ' - ' . strtoupper($item['portal'] ?? ''));
 
   $newsUrl = $item['link_url'] ? e($item['link_url']) : '#';
-  $pdfUrl = $item['pdf_path'] ? e(APP_URL . $item['pdf_path']) : null;
+  $pdfUrl  = $item['pdf_path'] ? e(APP_URL . $item['pdf_path']) : null;
 
   $title = e($item['title'] ?? '');
   $desc  = e($item['description'] ?? '');
@@ -84,96 +88,167 @@ function render_news_block(array $item): string {
         </table>
       </td>
     </tr>
-    <tr>
-      <td style="border-top:1px solid #dddddd;"></td>
-    </tr>
+    <tr><td style="border-top:1px solid #dddddd;"></td></tr>
   ';
 }
 
-function render_email_html(int $newsletterId): string {
+function render_news_block_send(array $item): string {
+  // conteúdo igual ao web, mas links ficam iguais (URL) pq são clique
+  return render_news_block_web($item);
+}
+
+function social_icons_html_web(array $n): string {
+  $icons = [
+    ['url' => $n['social_1_url'] ?? '', 'img' => APP_URL . '/assets/email/rede1.png'],
+    ['url' => $n['social_2_url'] ?? '', 'img' => APP_URL . '/assets/email/rede2.png'],
+    ['url' => $n['social_3_url'] ?? '', 'img' => APP_URL . '/assets/email/rede3.png'],
+    ['url' => $n['social_4_url'] ?? '', 'img' => APP_URL . '/assets/email/rede4.png'],
+  ];
+
+  $html = '';
+  foreach ($icons as $it) {
+    $u = trim((string)$it['url']);
+    if ($u === '' || $u === '#') continue; // se não tem, some
+    $html .= '<a href="' . e($u) . '"><img src="' . e($it['img']) . '" width="28" style="margin:0 6px; display:inline-block;"></a>';
+  }
+  return $html;
+}
+
+function social_icons_html_cid(array $n): array {
+  // retorna [html, embeds]
+  $map = [
+    ['url' => $n['social_1_url'] ?? '', 'cid' => 'rede1', 'path' => public_path('/assets/email/rede1.png')],
+    ['url' => $n['social_2_url'] ?? '', 'cid' => 'rede2', 'path' => public_path('/assets/email/rede2.png')],
+    ['url' => $n['social_3_url'] ?? '', 'cid' => 'rede3', 'path' => public_path('/assets/email/rede3.png')],
+    ['url' => $n['social_4_url'] ?? '', 'cid' => 'rede4', 'path' => public_path('/assets/email/rede4.png')],
+  ];
+
+  $html = '';
+  $embeds = [];
+
+  foreach ($map as $it) {
+    $u = trim((string)$it['url']);
+    if ($u === '' || $u === '#') continue;
+
+    if (is_file($it['path'])) {
+      $embeds[] = ['cid'=>$it['cid'], 'path'=>$it['path'], 'name'=>basename($it['path']), 'mime'=>'image/png'];
+      $html .= '<a href="' . e($u) . '"><img src="cid:' . e($it['cid']) . '" width="28" style="margin:0 6px; display:inline-block;"></a>';
+    }
+  }
+
+  return [$html, $embeds];
+}
+
+function render_email_web(int $newsletterId): string {
   [$n, $items] = get_newsletter_data($newsletterId);
 
   $headerImg = $n['header_image_path'] ? (APP_URL . $n['header_image_path']) : (APP_URL . '/assets/email/engaja.png');
-
-  $social1 = $n['social_1_url'] ?: '#';
-  $social2 = $n['social_2_url'] ?: '#';
-  $social3 = $n['social_3_url'] ?: '#';
-  $social4 = $n['social_4_url'] ?: '#';
-  $siteUrl = $n['site_url'] ?: 'https://www.engajacomunicacao.com.br';
+  $logoEngaja = APP_URL . '/assets/email/engaja.png';
 
   $newsBlocks = '';
-  foreach ($items as $it) $newsBlocks .= render_news_block($it);
+  foreach ($items as $it) $newsBlocks .= render_news_block_web($it);
 
-  $logoEngaja = APP_URL . '/assets/email/engaja.png';
-  $rede1 = APP_URL . '/assets/email/rede1.png';
-  $rede2 = APP_URL . '/assets/email/rede2.png';
-  $rede3 = APP_URL . '/assets/email/rede3.png';
-  $rede4 = APP_URL . '/assets/email/rede4.png';
+  $socialHtml = social_icons_html_web($n);
 
-  // Mantive o layout do seu index.html, só dinamizei
+  // FOOTER fixo Engaja
+  $fixedSite = 'https://www.engajacomunicacao.com.br';
+  $fixedSiteText = 'www.engajacomunicacao.com.br';
+
   return '<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>Radar de Notícias</title>
-</head>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>Radar de Notícias</title></head>
 <body style="margin:0; padding:0; background-color:#f2f2f2;">
-  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f2f2f2">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="font-family: Arial, Helvetica, sans-serif;">
-          <tr>
-            <td>
-              <img src="' . e($headerImg) . '" width="600" alt="Topo" style="display:block; width:100%; max-width:600px;">
-            </td>
-          </tr>
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f2f2f2"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="font-family: Arial, Helvetica, sans-serif;">
+<tr><td><img src="' . e($headerImg) . '" width="600" alt="Topo" style="display:block; width:100%; max-width:600px;"></td></tr>
 
-          <tr>
-            <td bgcolor="#CCC" align="center" style="padding:16px;">
-              <span style="color:#000; font-size:20px; font-weight:bold; letter-spacing:1px;">
-                RADAR DE NOTÍCIAS
-              </span>
-            </td>
-          </tr>
+<tr><td bgcolor="#CCC" align="center" style="padding:16px;">
+<span style="color:#000; font-size:20px; font-weight:bold; letter-spacing:1px;">RADAR DE NOTÍCIAS</span>
+</td></tr>
 
-          ' . $newsBlocks . '
+' . $newsBlocks . '
 
-          <tr>
-            <td bgcolor="#eeeeee" style="padding:0;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center" style="padding:20px;">
-                    <a href="' . e($social1) . '"><img src="' . e($rede1) . '" width="28" style="margin:0 6px; display:inline-block;"></a>
-                    <a href="' . e($social2) . '"><img src="' . e($rede2) . '" width="28" style="margin:0 6px; display:inline-block;"></a>
-                    <a href="' . e($social3) . '"><img src="' . e($rede3) . '" width="28" style="margin:0 6px; display:inline-block;"></a>
-                    <a href="' . e($social4) . '"><img src="' . e($rede4) . '" width="28" style="margin:0 6px; display:inline-block;"></a>
-                  </td>
-                </tr>
-              </table>
+<tr><td bgcolor="#eeeeee" style="padding:0;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td align="center" style="padding:20px;">' . $socialHtml . '</td>
+  </tr></table>
 
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr><td style="border-top:1px solid #cccccc;"></td></tr>
-              </table>
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #cccccc;"></td></tr></table>
 
-              <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
-                <tr>
-                  <td align="left" valign="middle">
-                    <img src="' . e($logoEngaja) . '" alt="Engaja" width="120" style="display:block;">
-                  </td>
-                  <td align="right" valign="middle" style="font-family:Arial, Helvetica, sans-serif;">
-                    <a href="' . e($siteUrl) . '" style="font-size:14px; color:#000000; text-decoration:none; font-weight:bold;">
-                      ' . e(preg_replace('#^https?://#', '', $siteUrl)) . '
-                    </a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;"><tr>
+    <td align="left" valign="middle">
+      <img src="' . e($logoEngaja) . '" alt="Engaja" width="120" style="display:block;">
+    </td>
+    <td align="right" valign="middle" style="font-family:Arial, Helvetica, sans-serif;">
+      <a href="' . e($fixedSite) . '" style="font-size:14px; color:#000000; text-decoration:none; font-weight:bold;">
+        ' . e($fixedSiteText) . '
+      </a>
+    </td>
+  </tr></table>
+</td></tr>
 
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>';
+</table></td></tr></table>
+</body></html>';
+}
+
+function render_email_send(int $newsletterId): array {
+  [$n, $items] = get_newsletter_data($newsletterId);
+
+  // Header: tenta usar imagem da empresa, senão engaja.png
+  $headerAbs = $n['header_image_path'] ? public_path($n['header_image_path']) : public_path('/assets/email/engaja.png');
+  if (!is_file($headerAbs)) $headerAbs = public_path('/assets/email/engaja.png');
+
+  $embeds = [];
+  $embeds[] = ['cid'=>'header', 'path'=>$headerAbs, 'name'=>basename($headerAbs), 'mime'=>'image/png'];
+
+  // Engaja fixo
+  $logoAbs = public_path('/assets/email/engaja.png');
+  if (is_file($logoAbs)) {
+    $embeds[] = ['cid'=>'engaja_logo', 'path'=>$logoAbs, 'name'=>'engaja.png', 'mime'=>'image/png'];
+  }
+
+  $newsBlocks = '';
+  foreach ($items as $it) $newsBlocks .= render_news_block_send($it);
+
+  [$socialHtml, $socialEmbeds] = social_icons_html_cid($n);
+  $embeds = array_merge($embeds, $socialEmbeds);
+
+  $fixedSite = 'https://www.engajacomunicacao.com.br';
+  $fixedSiteText = 'www.engajacomunicacao.com.br';
+
+  $html = '<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>Radar de Notícias</title></head>
+<body style="margin:0; padding:0; background-color:#f2f2f2;">
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f2f2f2"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="font-family: Arial, Helvetica, sans-serif;">
+<tr><td><img src="cid:header" width="600" alt="Topo" style="display:block; width:100%; max-width:600px;"></td></tr>
+
+<tr><td bgcolor="#CCC" align="center" style="padding:16px;">
+<span style="color:#000; font-size:20px; font-weight:bold; letter-spacing:1px;">RADAR DE NOTÍCIAS</span>
+</td></tr>
+
+' . $newsBlocks . '
+
+<tr><td bgcolor="#eeeeee" style="padding:0;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td align="center" style="padding:20px;">' . $socialHtml . '</td>
+  </tr></table>
+
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #cccccc;"></td></tr></table>
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;"><tr>
+    <td align="left" valign="middle">
+      <img src="cid:engaja_logo" alt="Engaja" width="120" style="display:block;">
+    </td>
+    <td align="right" valign="middle" style="font-family:Arial, Helvetica, sans-serif;">
+      <a href="' . e($fixedSite) . '" style="font-size:14px; color:#000000; text-decoration:none; font-weight:bold;">
+        ' . e($fixedSiteText) . '
+      </a>
+    </td>
+  </tr></table>
+</td></tr>
+
+</table></td></tr></table>
+</body></html>';
+
+  return ['html' => $html, 'embeds' => $embeds];
 }
