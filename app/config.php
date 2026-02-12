@@ -16,7 +16,7 @@ define('UPLOAD_DIR_PDFS', __DIR__ . '/../public/uploads/pdfs');
 define('MAIL_HOST', 'smtp.gmail.com');
 define('MAIL_PORT', 587);
 define('MAIL_USER', 'monitoramento@engajacomunicacao.com.br');
-define('MAIL_PASS', '@relations');
+define('MAIL_PASS', 'prar uzta hizw ewgf');
 define('MAIL_FROM_EMAIL', 'monitoramento@engajacomunicacao.com.br');
 define('MAIL_FROM_NAME', 'Engaja Comunicação');
 
