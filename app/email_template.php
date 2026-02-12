@@ -99,10 +99,10 @@ function render_news_block_send(array $item): string {
 
 function social_icons_html_web(array $n): string {
   $icons = [
-    ['url' => $n['social_1_url'] ?? '', 'img' => APP_URL . '/assets/email/rede1.png'],
-    ['url' => $n['social_2_url'] ?? '', 'img' => APP_URL . '/assets/email/rede2.png'],
-    ['url' => $n['social_3_url'] ?? '', 'img' => APP_URL . '/assets/email/rede3.png'],
-    ['url' => $n['social_4_url'] ?? '', 'img' => APP_URL . '/assets/email/rede4.png'],
+    ['url' => $n['social_1_url'] ?? '', 'img' => APP_URL . '/assets/rede1.png'],
+    ['url' => $n['social_2_url'] ?? '', 'img' => APP_URL . '/assets/rede2.png'],
+    ['url' => $n['social_3_url'] ?? '', 'img' => APP_URL . '/assets/rede3.png'],
+    ['url' => $n['social_4_url'] ?? '', 'img' => APP_URL . '/assets/rede4.png'],
   ];
 
   $html = '';
@@ -117,10 +117,10 @@ function social_icons_html_web(array $n): string {
 function social_icons_html_cid(array $n): array {
   // retorna [html, embeds]
   $map = [
-    ['url' => $n['social_1_url'] ?? '', 'cid' => 'rede1', 'path' => public_path('/assets/email/rede1.png')],
-    ['url' => $n['social_2_url'] ?? '', 'cid' => 'rede2', 'path' => public_path('/assets/email/rede2.png')],
-    ['url' => $n['social_3_url'] ?? '', 'cid' => 'rede3', 'path' => public_path('/assets/email/rede3.png')],
-    ['url' => $n['social_4_url'] ?? '', 'cid' => 'rede4', 'path' => public_path('/assets/email/rede4.png')],
+    ['url' => $n['social_1_url'] ?? '', 'cid' => 'rede1', 'path' => public_path('/assets/rede1.png')],
+    ['url' => $n['social_2_url'] ?? '', 'cid' => 'rede2', 'path' => public_path('/assets/rede2.png')],
+    ['url' => $n['social_3_url'] ?? '', 'cid' => 'rede3', 'path' => public_path('/assets/rede3.png')],
+    ['url' => $n['social_4_url'] ?? '', 'cid' => 'rede4', 'path' => public_path('/assets/rede4.png')],
   ];
 
   $html = '';
@@ -142,8 +142,8 @@ function social_icons_html_cid(array $n): array {
 function render_email_web(int $newsletterId): string {
   [$n, $items] = get_newsletter_data($newsletterId);
 
-  $headerImg = $n['header_image_path'] ? (APP_URL . $n['header_image_path']) : (APP_URL . '/assets/email/engaja.png');
-  $logoEngaja = APP_URL . '/assets/email/engaja.png';
+  $headerImg = $n['header_image_path'] ? (APP_URL . $n['header_image_path']) : (APP_URL . '/assets/engaja.png');
+  $logoEngaja = APP_URL . '/assets/engaja.png';
 
   $newsBlocks = '';
   foreach ($items as $it) $newsBlocks .= render_news_block_web($it);
@@ -194,14 +194,14 @@ function render_email_send(int $newsletterId): array {
   [$n, $items] = get_newsletter_data($newsletterId);
 
   // Header: tenta usar imagem da empresa, senão engaja.png
-  $headerAbs = $n['header_image_path'] ? public_path($n['header_image_path']) : public_path('/assets/email/engaja.png');
-  if (!is_file($headerAbs)) $headerAbs = public_path('/assets/email/engaja.png');
+  $headerAbs = $n['header_image_path'] ? public_path($n['header_image_path']) : public_path('/assets/engaja.png');
+  if (!is_file($headerAbs)) $headerAbs = public_path('/assets/engaja.png');
 
   $embeds = [];
   $embeds[] = ['cid'=>'header', 'path'=>$headerAbs, 'name'=>basename($headerAbs), 'mime'=>'image/png'];
 
   // Engaja fixo
-  $logoAbs = public_path('/assets/email/engaja.png');
+  $logoAbs = public_path('/assets/engaja.png');
   if (is_file($logoAbs)) {
     $embeds[] = ['cid'=>'engaja_logo', 'path'=>$logoAbs, 'name'=>'engaja.png', 'mime'=>'image/png'];
   }

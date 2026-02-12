@@ -1,7 +1,7 @@
 <?php
 // app/config.php
 
-define('APP_URL', 'http://localhost/engaja');
+define('APP_URL', 'http://localhost/engaja-newsletter');
 
 define('DB_HOST', '127.0.0.1');
 define('DB_NAME', 'engaja');

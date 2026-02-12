@@ -1,0 +1,53 @@
+# === OS / IDE ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+*.iml
+
+# === Composer ===
+/vendor/
+composer.phar
+composer.lock
+
+# === Environment / local configs ===
+.env
+.env.*
+app/config.local.php
+app/config.php.local
+app/config.php.bak
+
+# Se você quiser manter config.php fora do git (recomendado):
+# app/config.php
+
+# === Uploads (arquivos gerados) ===
+/public/uploads/
+/public/uploads/headers/*
+/public/uploads/pdfs/*
+!/public/uploads/.gitkeep
+!/public/uploads/headers/.gitkeep
+!/public/uploads/pdfs/.gitkeep
+
+# === Logs / cache / temp ===
+*.log
+logs/
+cache/
+tmp/
+storage/
+sessions/
+
+# === Apache/Nginx local ===
+.htaccess.local
+*.pid
+
+# === Backup / dumps ===
+*.sql.bak
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# === PHPUnit / tests ===
+.phpunit.result.cache

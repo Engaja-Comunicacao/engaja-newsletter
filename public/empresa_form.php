@@ -91,24 +91,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <hr>
 
+    <h3 style="margin:0 0 12px 0;">Redes</h3>
+
     <div class="row">
       <div>
-        <label><small class="muted">Rede 1</small></label>
-        <input name="social_1_url" value="<?= e($company['social_1_url'] ?? '') ?>" placeholder="https://...">
+        <label><small class="muted">Instagram</small></label>
+        <input name="social_1_url" value="<?= e($company['social_1_url'] ?? '') ?>" placeholder="https://instagram.com/...">
       </div>
       <div>
-        <label><small class="muted">Rede 2</small></label>
-        <input name="social_2_url" value="<?= e($company['social_2_url'] ?? '') ?>" placeholder="https://...">
+        <label><small class="muted">Facebook</small></label>
+        <input name="social_2_url" value="<?= e($company['social_2_url'] ?? '') ?>" placeholder="https://facebook.com/...">
       </div>
     </div>
 
     <div class="row">
       <div>
-        <label><small class="muted">Rede 3</small></label>
-        <input name="social_3_url" value="<?= e($company['social_3_url'] ?? '') ?>" placeholder="https://...">
+        <label><small class="muted">Linkedin</small></label>
+        <input name="social_3_url" value="<?= e($company['social_3_url'] ?? '') ?>" placeholder="https://linkedin.com/company/...">
       </div>
       <div>
-        <label><small class="muted">Rede 4</small></label>
+        <label><small class="muted">Site</small></label>
         <input name="social_4_url" value="<?= e($company['social_4_url'] ?? '') ?>" placeholder="https://...">
       </div>
     </div>

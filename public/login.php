@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="login-bg">
   <form class="login-box" method="POST">
-    <h1 class="logo"><img src="assets/email/engaja.png" alt="Engaja" style="height:28px;"/></h1>
+    <h1 class="logo"><img src="assets/engaja.png" alt="Engaja" style="height:28px;"/></h1>
 
     <?= csrf_field(); ?>
 

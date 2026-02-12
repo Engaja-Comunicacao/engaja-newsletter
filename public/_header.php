@@ -13,7 +13,7 @@ $u = current_user();
 </head>
 <body>
 <header>
-  <h1 class="logo"><img src="assets/email/engaja.png" alt="Engaja" style="height:28px;"/></h1>
+  <h1 class="logo"><img src="assets/engaja.png" alt="Engaja" style="height:28px;"/></h1>
   <nav>
     <a href="empresas.php">Empresas</a>
     <a href="usuarios.php">Usuários</a>
