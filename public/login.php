@@ -39,8 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <input name="email" placeholder="Email" required>
     <input type="password" name="password" placeholder="Senha" required>
     <button>Entrar</button>
-
-    <p><small class="muted">Admin: admin@admin.com / admin123</small></p>
   </form>
 </body>
 </html>
