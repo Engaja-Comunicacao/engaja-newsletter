@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/_header.php';
+require_once __DIR__ . '/../app/helpers.php';
 
 $pdo = db();
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -40,6 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = $t->getMessage();
   }
 }
+
+require_once __DIR__ . '/_header.php';
 ?>
 <main class="container card">
   <h2><?= $id ? 'Editar Usuário' : 'Cadastro de Usuário' ?></h2>
