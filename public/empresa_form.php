@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/auth.php';
+require_once __DIR__ . '/../app/helpers.php';
 require_login();
 
 $pdo = db();
@@ -45,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $params[] = $id;
       $pdo->prepare($sql)->execute($params);
     } else {
-      // 6 colunas => 6 placeholders
       $pdo->prepare("INSERT INTO companies (name, header_image_path, social_1_url, social_2_url, social_3_url, social_4_url)
                      VALUES (?,?,?,?,?,?)")
           ->execute([$name, $newHeader, $s1 ?: null, $s2 ?: null, $s3 ?: null, $s4 ?: null]);

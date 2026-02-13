@@ -10,14 +10,7 @@ function redirect(string $path): void {
   exit;
 }
 
-function require_post(): void {
-  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    exit('Método não permitido');
-  }
-}
-
-// CSRF (simples e suficiente)
+// CSRF
 function csrf_token(): string {
   if (empty($_SESSION['_csrf'])) {
     $_SESSION['_csrf'] = bin2hex(random_bytes(16));
@@ -43,7 +36,6 @@ function ensure_dir(string $dir): void {
   }
 }
 
-// Upload helpers
 function upload_image(string $field, string $destDir): ?string {
   if (empty($_FILES[$field]) || $_FILES[$field]['error'] === UPLOAD_ERR_NO_FILE) return null;
   if ($_FILES[$field]['error'] !== UPLOAD_ERR_OK) throw new RuntimeException('Erro no upload da imagem.');
@@ -53,7 +45,7 @@ function upload_image(string $field, string $destDir): ?string {
   $mime = $finfo->file($tmp);
 
   $allowed = [
-    'image/png' => 'png',
+    'image/png'  => 'png',
     'image/jpeg' => 'jpg',
     'image/webp' => 'webp'
   ];
@@ -65,7 +57,6 @@ function upload_image(string $field, string $destDir): ?string {
 
   if (!move_uploaded_file($tmp, $full)) throw new RuntimeException('Falha ao salvar imagem.');
 
-  // path público
   return '/uploads/headers/' . $name;
 }
 
@@ -89,7 +80,6 @@ function upload_pdf_from_array(string $field, int $idx, string $destDir): ?strin
   return '/uploads/pdfs/' . $name;
 }
 
-// Datas
 function format_ptbr_upper(?string $dateYmd): string {
   if (!$dateYmd) return '';
   $ts = strtotime($dateYmd);
@@ -101,4 +91,29 @@ function format_ptbr_upper(?string $dateYmd): string {
   ];
   $m = $months[date('m', $ts)] ?? '';
   return $day . ' DE ' . $m;
+}
+
+function public_fs_path(string $publicPath): string {
+  // $publicPath tipo: /uploads/headers/x.png ou /assets/email/engaja.png
+  if ($publicPath === '' || $publicPath[0] !== '/') {
+    throw new RuntimeException('Caminho público inválido.');
+  }
+  $base = realpath(__DIR__ . '/../public');
+  $full = realpath(__DIR__ . '/../public' . $publicPath);
+
+  // Se ainda não existir (uploads recém-criados), tenta montar sem realpath
+  if ($full === false) {
+    $full = __DIR__ . '/../public' . $publicPath;
+  }
+
+  // Proteção simples contra traversal
+  if ($base && strpos(str_replace('\\','/',$full), str_replace('\\','/',$base)) !== 0) {
+    throw new RuntimeException('Path traversal detectado.');
+  }
+
+  return $full;
+}
+
+function url_join(string $base, string $path): string {
+  return rtrim($base, '/') . '/' . ltrim($path, '/');
 }

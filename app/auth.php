@@ -13,9 +13,11 @@ function start_session(): void {
 function current_user(): ?array {
   start_session();
   if (empty($_SESSION['user_id'])) return null;
-  $stmt = db()->prepare("SELECT id, name, email FROM users WHERE id = ?");
-  $stmt->execute([$_SESSION['user_id']]);
-  $u = $stmt->fetch();
+
+  $st = db()->prepare("SELECT id,name,email FROM users WHERE id=? LIMIT 1");
+  $st->execute([(int)$_SESSION['user_id']]);
+  $u = $st->fetch();
+
   return $u ?: null;
 }
 
@@ -24,10 +26,11 @@ function require_login(): void {
 }
 
 function do_login(string $email, string $password): bool {
-  $stmt = db()->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
-  $stmt->execute([$email]);
-  $u = $stmt->fetch();
+  $st = db()->prepare("SELECT * FROM users WHERE email=? LIMIT 1");
+  $st->execute([$email]);
+  $u = $st->fetch();
   if (!$u) return false;
+
   if (!password_verify($password, $u['password_hash'])) return false;
 
   start_session();
