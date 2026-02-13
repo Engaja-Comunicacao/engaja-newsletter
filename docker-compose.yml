@@ -1,0 +1,47 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: engaja_web
+    ports:
+      - "8080:80"
+    environment:
+      APP_URL: "http://localhost:8080"
+      DB_HOST: db
+      DB_NAME: engaja
+      DB_USER: engaja
+      DB_PASS: engaja123
+      TZ: America/Fortaleza
+
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: 587
+      MAIL_USER: monitoramento@engajacomunicacao.com.br
+      MAIL_PASS: "prar uzta hizw ewgf"
+      MAIL_FROM_EMAIL: monitoramento@engajacomunicacao.com.br
+      MAIL_FROM_NAME: "Engaja Comunicação"
+    volumes:
+      - ./:/var/www/html
+      - engaja_uploads:/var/www/html/public/uploads
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: engaja_db
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: engaja
+      MYSQL_USER: engaja
+      MYSQL_PASSWORD: engaja123
+      MYSQL_ROOT_PASSWORD: root123
+      TZ: America/Sao_Paulo
+    ports:
+      - "3306:3306"
+    volumes:
+      - engaja_dbdata:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+
+volumes:
+  engaja_dbdata:
+  engaja_uploads:
