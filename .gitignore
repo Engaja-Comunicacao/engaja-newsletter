@@ -13,8 +13,7 @@ composer.phar
 composer.lock
 
 # === Environment / local configs ===
-.env
-.env.*
+*.env
 app/config.local.php
 app/config.php.local
 app/config.php.bak
