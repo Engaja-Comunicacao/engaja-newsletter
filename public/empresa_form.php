@@ -1,15 +1,16 @@
 <?php
-require_once __DIR__ . '/_header.php';
-require_once __DIR__ . '/../app/helpers.php';
+require_once __DIR__ . '/../app/auth.php';
+require_login();
 
 $pdo = db();
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 $company = [
-  'name'=>'','header_image_path'=>null,'site_url'=>null,
+  'name'=>'','header_image_path'=>null,
   'social_1_url'=>null,'social_2_url'=>null,'social_3_url'=>null,'social_4_url'=>null
 ];
 $recipients = [];
+$error = '';
 
 if ($id) {
   $st = $pdo->prepare("SELECT * FROM companies WHERE id=?");
@@ -21,8 +22,6 @@ if ($id) {
   $recipients = $st->fetchAll();
 }
 
-$error = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   csrf_verify();
 
@@ -30,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     if ($name === '') throw new RuntimeException('Nome é obrigatório.');
 
-    // upload topo
     $newHeader = upload_image('header_image', UPLOAD_DIR_HEADERS);
 
     $s1 = trim($_POST['social_1_url'] ?? '');
@@ -47,16 +45,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $params[] = $id;
       $pdo->prepare($sql)->execute($params);
     } else {
+      // 6 colunas => 6 placeholders
       $pdo->prepare("INSERT INTO companies (name, header_image_path, social_1_url, social_2_url, social_3_url, social_4_url)
-                    VALUES (?,?,?,?,?,?)")
+                     VALUES (?,?,?,?,?,?)")
           ->execute([$name, $newHeader, $s1 ?: null, $s2 ?: null, $s3 ?: null, $s4 ?: null]);
       $id = (int)$pdo->lastInsertId();
     }
 
-    // recipients
     $emails = $_POST['recipient_emails'] ?? [];
     $emails = array_values(array_unique(array_filter(array_map('trim', $emails))));
-    // limpa e regrava (simples)
+
     $pdo->prepare("DELETE FROM company_recipients WHERE company_id=?")->execute([$id]);
     $ins = $pdo->prepare("INSERT INTO company_recipients (company_id, email) VALUES (?,?)");
     foreach ($emails as $em) {
@@ -69,6 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = $t->getMessage();
   }
 }
+
+require_once __DIR__ . '/_header.php';
 ?>
 <main class="container card">
   <h2><?= $id ? 'Editar Empresa' : 'Cadastro de Empresa' ?></h2>
@@ -90,7 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <hr>
-
     <h3 style="margin:0 0 12px 0;">Redes</h3>
 
     <div class="row">

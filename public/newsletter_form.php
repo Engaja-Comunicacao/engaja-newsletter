@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/_header.php';
-require_once __DIR__ . '/../app/helpers.php';
+require_once __DIR__ . '/../app/auth.php';
+require_login();
 
 $pdo = db();
 $companies = $pdo->query("SELECT id,name FROM companies ORDER BY name ASC")->fetchAll();
@@ -12,23 +12,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   try {
     $companyId = (int)($_POST['company_id'] ?? 0);
-    $sendAt = trim($_POST['send_at'] ?? ''); // datetime-local
+    $sendAt = trim($_POST['send_at'] ?? '');
 
     if (!$companyId) throw new RuntimeException('Selecione a empresa.');
 
     $sendAtDb = $sendAt ? date('Y-m-d H:i:s', strtotime($sendAt)) : null;
 
-    // cria newsletter como draft
     $pdo->prepare("INSERT INTO newsletters (company_id, send_at, status) VALUES (?,?, 'draft')")
         ->execute([$companyId, $sendAtDb]);
     $newsletterId = (int)$pdo->lastInsertId();
 
-    // items
-    $titles = $_POST['item_title'] ?? [];
-    $descs  = $_POST['item_desc'] ?? [];
-    $portals= $_POST['item_portal'] ?? [];
-    $dates  = $_POST['item_date'] ?? [];
-    $links  = $_POST['item_link'] ?? [];
+    $titles  = $_POST['item_title'] ?? [];
+    $descs   = $_POST['item_desc'] ?? [];
+    $portals = $_POST['item_portal'] ?? [];
+    $dates   = $_POST['item_date'] ?? [];
+    $links   = $_POST['item_link'] ?? [];
 
     if (count($titles) === 0) throw new RuntimeException('Adicione pelo menos 1 notícia.');
 
@@ -47,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $link   = trim($links[$i] ?? '');
 
       $dateDb = $date ? date('Y-m-d', strtotime($date)) : null;
-
       $pdfPath = upload_pdf_from_array('item_pdf', $i, UPLOAD_DIR_PDFS);
 
       $ins->execute([
@@ -67,6 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = $t->getMessage();
   }
 }
+
+require_once __DIR__ . '/_header.php';
 ?>
 <main class="container card">
   <h2>Cadastro de Newsletter</h2>
@@ -101,15 +100,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div id="newsItems"></div>
 
     <button class="btn" style="margin-top:16px;">Ir para preview</button>
-
-    <p><small class="muted">Dica: adicione pelo menos 1 notícia antes de salvar.</small></p>
   </form>
 </main>
 
 <script src="assets/script.js"></script>
-<script>
-  // já começa com 1 item
-  addNewsItem();
-</script>
+<script>addNewsItem();</script>
 
 <?php require_once __DIR__ . '/_footer.php'; ?>

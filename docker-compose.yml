@@ -7,7 +7,7 @@ services:
     ports:
       - "8080:80"
     environment:
-      APP_URL: "http://localhost:8080"
+      APP_URL: "https://newsletter.engajacomunicacao.com.br"
       DB_HOST: db
       DB_NAME: engaja
       DB_USER: engaja
@@ -22,6 +22,7 @@ services:
       MAIL_FROM_NAME: "Engaja Comunicação"
     volumes:
       - ./:/var/www/html
+      - /var/www/html/vendor
       - engaja_uploads:/var/www/html/public/uploads
     depends_on:
       - db
