@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $pdo->prepare($sql)->execute($params);
     } else {
       $pdo->prepare("INSERT INTO companies (name, header_image_path, social_1_url, social_2_url, social_3_url, social_4_url)
-                     VALUES (?,?,?,?,?,?,?)")
+                    VALUES (?,?,?,?,?,?)")
           ->execute([$name, $newHeader, $s1 ?: null, $s2 ?: null, $s3 ?: null, $s4 ?: null]);
       $id = (int)$pdo->lastInsertId();
     }
