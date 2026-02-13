@@ -8,4 +8,4 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$id) { http_response_code(400); exit('ID inválido'); }
 
 header('Content-Type: text/html; charset=UTF-8');
-echo render_email_web($id);
+echo render_email_preview_html($id);
