@@ -42,3 +42,4 @@ define('MAIL_FROM_NAME', env_str('MAIL_FROM_NAME', 'Engaja Comunicação'));
 
 // Segurança
 define('SESSION_NAME', env_str('SESSION_NAME', 'engaja_session'));
+define('ENGAJA_SITE_URL', 'https://www.engajacomunicacao.com.br');
