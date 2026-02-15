@@ -94,7 +94,7 @@ function format_ptbr_upper(?string $dateYmd): string {
 }
 
 function public_fs_path(string $publicPath): string {
-  // $publicPath tipo: /uploads/headers/x.png ou /assets/email/engaja.png
+  // $publicPath tipo: /uploads/headers/x.png ou /assets/engaja.png
   if ($publicPath === '' || $publicPath[0] !== '/') {
     throw new RuntimeException('Caminho público inválido.');
   }

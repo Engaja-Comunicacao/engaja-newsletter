@@ -95,13 +95,13 @@ function render_email_preview_html(int $newsletterId): string {
 
   $headerImg = $n['header_image_path']
     ? url_join(APP_URL, $n['header_image_path'])
-    : url_join(APP_URL, '/assets/email/engaja.png');
+    : url_join(APP_URL, '/assets/engaja.png');
 
-  $logoEngajaUrl = url_join(APP_URL, '/assets/email/engaja.png');
-  $rede1Url = url_join(APP_URL, '/assets/email/rede1.png');
-  $rede2Url = url_join(APP_URL, '/assets/email/rede2.png');
-  $rede3Url = url_join(APP_URL, '/assets/email/rede3.png');
-  $rede4Url = url_join(APP_URL, '/assets/email/rede4.png');
+  $logoEngajaUrl = url_join(APP_URL, '/assets/engaja.png');
+  $rede1Url = url_join(APP_URL, '/assets/rede1.png');
+  $rede2Url = url_join(APP_URL, '/assets/rede2.png');
+  $rede3Url = url_join(APP_URL, '/assets/rede3.png');
+  $rede4Url = url_join(APP_URL, '/assets/rede4.png');
 
   $socials = [
     ['url' => trim((string)($n['social_1_url'] ?? '')), 'icon' => $rede1Url],
@@ -198,19 +198,19 @@ function render_email_send(int $newsletterId): array {
   $embeds = [];
 
   // Topo (upload da empresa)
-  $headerPublic = $n['header_image_path'] ?: '/assets/email/engaja.png';
+  $headerPublic = $n['header_image_path'] ?: '/assets/engaja.png';
   $headerFs = public_fs_path($headerPublic);
   $embeds['header_img'] = $headerFs;
 
   // Logo Engaja (fixo)
-  $logoFs = public_fs_path('/assets/email/engaja.png');
+  $logoFs = public_fs_path('/assets/engaja.png');
   $embeds['engaja_logo'] = $logoFs;
 
   // Ícones redes (fixos)
-  $rede1Fs = public_fs_path('/assets/email/rede1.png');
-  $rede2Fs = public_fs_path('/assets/email/rede2.png');
-  $rede3Fs = public_fs_path('/assets/email/rede3.png');
-  $rede4Fs = public_fs_path('/assets/email/rede4.png');
+  $rede1Fs = public_fs_path('/assets/rede1.png');
+  $rede2Fs = public_fs_path('/assets/rede2.png');
+  $rede3Fs = public_fs_path('/assets/rede3.png');
+  $rede4Fs = public_fs_path('/assets/rede4.png');
 
   // Social links (somem se vazio)
   $socials = [
