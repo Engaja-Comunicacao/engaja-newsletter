@@ -196,12 +196,10 @@ function render_email_send(int $newsletterId): array {
 
   // Topo
   $headerPublic = $n['header_image_path'] ?: '/assets/engaja.png';
-  $headerFs = public_fs_path($headerPublic);
-  if ($headerFs) $embeds['header_img'] = $headerFs;
+  $embeds['header_img'] = public_fs_path($headerPublic);
 
   // Logo Engaja
-  $logoFs = public_fs_path('/assets/engaja.png');
-  if ($logoFs) $embeds['engaja_logo'] = $logoFs;
+  $embeds['engaja_logo'] = public_fs_path('/assets/engaja.png');
 
   // Ícones redes
   $rede1Fs = public_fs_path('/assets/rede1.png');

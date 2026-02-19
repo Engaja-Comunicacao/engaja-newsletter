@@ -97,23 +97,28 @@ function format_ptbr_upper(?string $dateYmd): string {
  * Converte um caminho público (ex: /uploads/headers/a.png) em caminho absoluto no FS.
  * Procura dentro de /public.
  */
-function public_fs_path(string $publicPath): ?string {
+function public_fs_path(string $publicPath): string {
   $publicPath = '/' . ltrim($publicPath, '/');
 
   $base = realpath(__DIR__ . '/../public');
-  if (!$base) return null;
+  if (!$base) {
+    throw new RuntimeException('Pasta public não encontrada.');
+  }
 
-  // Caminho "cru"
-  $raw = __DIR__ . '/../public' . $publicPath;
+  $full = $base . $publicPath;
 
-  // Se existir, ok. Se não, tenta realpath (ou vice-versa)
-  $full = file_exists($raw) ? $raw : realpath($raw);
-  if ($full === false || $full === null) return null;
-
-  // Proteção simples contra traversal
+  // normaliza
   $baseN = str_replace('\\', '/', $base);
   $fullN = str_replace('\\', '/', $full);
-  if (strpos($fullN, $baseN) !== 0) return null;
+
+  // proteção traversal simples
+  if (strpos($fullN, $baseN) !== 0) {
+    throw new RuntimeException('Path traversal detectado.');
+  }
+
+  if (!file_exists($full)) {
+    throw new RuntimeException("Arquivo não existe em public: {$publicPath} (fs: {$full})");
+  }
 
   return $full;
 }
