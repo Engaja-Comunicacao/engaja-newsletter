@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/_header.php';
 
+$flashSuccess = $_SESSION['flash_success'] ?? null;
+$flashError = $_SESSION['flash_error'] ?? null;
+unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+
 $rows = db()->query("
   SELECT
     n.id,
@@ -22,7 +26,19 @@ $rows = db()->query("
   <h2>Newsletters</h2>
   <a class="btn" href="newsletter_form.php">+ Nova Newsletter</a>
 
-  <table>
+  <?php if ($flashSuccess): ?>
+    <div style="margin-top:14px; background:#dcfce7; padding:12px; border-radius:10px; color:#166534; font-weight:600;">
+      <?= e($flashSuccess) ?>
+    </div>
+  <?php endif; ?>
+
+  <?php if ($flashError): ?>
+    <div style="margin-top:14px; background:#fee2e2; padding:12px; border-radius:10px; color:#991b1b; font-weight:600;">
+      <?= e($flashError) ?>
+    </div>
+  <?php endif; ?>
+
+  <table style="margin-top:14px;">
     <tr>
       <th>ID</th>
       <th>Empresa</th>

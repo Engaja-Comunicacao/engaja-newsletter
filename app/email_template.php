@@ -188,10 +188,6 @@ function render_email_preview_html(int $newsletterId): string {
 
 /**
  * SEND: retorna payload com HTML + embeds (CID)
- * Exigido:
- * $payload = render_email_send($id);
- * send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds']);
- * embeds: [ 'cid' => '/abs/path/no/fs' ]
  */
 function render_email_send(int $newsletterId): array {
   [$n, $items] = get_newsletter_data($newsletterId);
@@ -216,7 +212,6 @@ function render_email_send(int $newsletterId): array {
   $socials = [
     ['url' => trim((string)($n['social_1_url'] ?? '')), 'cid' => 'rede1', 'fs' => $rede1Fs],
     ['url' => trim((string)($n['social_2_url'] ?? '')), 'cid' => 'rede2', 'fs' => $rede2Fs],
-    ['url' => trim((string)($n['social_3_url'] ?? '')), 'cid' => 'rede3', 'fs' => $rede3Fs],
     ['url' => trim((string)($n['social_3_url'] ?? '')), 'cid' => 'rede3', 'fs' => $rede3Fs],
     ['url' => trim((string)($n['social_4_url'] ?? '')), 'cid' => 'rede4', 'fs' => $rede4Fs],
   ];
