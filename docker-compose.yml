@@ -58,10 +58,12 @@ services:
         condition: service_healthy
     restart: unless-stopped
     command: >
-      sh -lc "while true; do
-        php /var/www/html/cron/send_scheduled.php >> /var/www/html/storage/cron.log 2>&1;
-        sleep 60;
-      done"
+      sh -lc "mkdir -p /var/www/html/storage &&
+              touch /var/www/html/storage/cron.log &&
+              while true; do
+                php /var/www/html/cron/send_scheduled.php >> /var/www/html/storage/cron.log 2>&1;
+                sleep 60;
+              done"
 
   db:
     image: mysql:8.0
