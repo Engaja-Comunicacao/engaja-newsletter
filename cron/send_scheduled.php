@@ -30,7 +30,10 @@ foreach ($rows as $r) {
 
     $payload = render_email_send($id);
 
-    $dateStr = date('d/m/Y');
+    $dateStr = !empty($n['send_at'])
+      ? date('d/m/Y', strtotime($n['send_at']))
+      : date('d/m/Y');
+
     $subject = "Radar de Notícias - {$dateStr} - " . ($n['company_name'] ?? 'Engaja');
 
     send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds']);

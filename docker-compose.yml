@@ -30,6 +30,39 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: engaja_scheduler
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: engaja
+      DB_USER: engaja
+      DB_PASS: engaja123
+      TZ: America/Fortaleza
+
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: 587
+      MAIL_USER: monitoramento@engajacomunicacao.com.br
+      MAIL_PASS: "prar uzta hizw ewgf"
+      MAIL_FROM_EMAIL: monitoramento@engajacomunicacao.com.br
+      MAIL_FROM_NAME: "Engaja Comunicação"
+    volumes:
+      - ./:/var/www/html
+      - /var/www/html/vendor
+      - engaja_uploads:/var/www/html/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -lc "while true; do
+        php /var/www/html/cron/send_scheduled.php >> /var/www/html/storage/cron.log 2>&1;
+        sleep 60;
+      done"
+
   db:
     image: mysql:8.0
     container_name: engaja_db

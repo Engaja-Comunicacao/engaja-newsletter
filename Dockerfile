@@ -33,4 +33,8 @@ RUN mkdir -p public/uploads/headers public/uploads/pdfs \
 # Instala dependências PHP (se existir composer.json)
 RUN if [ -f composer.json ]; then composer install --no-interaction --prefer-dist; fi
 
+RUN mkdir -p /var/www/html/storage \
+ && chown -R www-data:www-data /var/www/html/storage \
+ && chmod -R 775 /var/www/html/storage
+
 EXPOSE 80
