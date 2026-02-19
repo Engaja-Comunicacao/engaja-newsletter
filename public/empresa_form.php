@@ -83,7 +83,11 @@ require_once __DIR__ . '/_header.php';
     <label><small class="muted">Nome da Empresa</small></label>
     <input name="name" value="<?= e($company['name'] ?? '') ?>" placeholder="Nome da Empresa" required>
 
-    <label><small class="muted">Imagem topo do email (PNG/JPG/WEBP)</small></label>
+    <label>
+      <small class="muted">
+        Imagem topo do email (PNG/JPG/WEBP) — <strong>600x300px</strong>
+      </small>
+    </label>
     <input type="file" name="header_image" accept="image/png,image/jpeg,image/webp">
     <?php if (!empty($company['header_image_path'])): ?>
       <p><small class="muted">Atual: <?= e($company['header_image_path']) ?></small></p>

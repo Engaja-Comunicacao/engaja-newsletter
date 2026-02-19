@@ -1,12 +1,26 @@
 <?php
-require_once __DIR__ . '/_header.php';
+require_once __DIR__ . '/../app/auth.php';
+require_once __DIR__ . '/../app/helpers.php';
+require_login();
+
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$id) redirect('newsletters.php');
 
-$st = db()->prepare("SELECT status, error_message, send_at, sent_at FROM newsletters WHERE id=?");
+$st = db()->prepare("
+  SELECT
+    n.status, n.error_message, n.send_at, n.sent_at,
+    u_send.name AS sent_by_name,
+    u_create.name AS created_by_name
+  FROM newsletters n
+  LEFT JOIN users u_send ON u_send.id = n.sent_by_user_id
+  LEFT JOIN users u_create ON u_create.id = n.created_by_user_id
+  WHERE n.id=?
+  LIMIT 1
+");
 $st->execute([$id]);
 $meta = $st->fetch();
 
+require_once __DIR__ . '/_header.php';
 ?>
 <main class="container card">
   <h2>Preview da Newsletter #<?= $id ?></h2>
@@ -31,8 +45,21 @@ $meta = $st->fetch();
   <?php if ($meta): ?>
     <p>
       <strong>Status:</strong> <?= e($meta['status']) ?>
-      <?php if (!empty($meta['send_at'])): ?> | <strong>Agendado:</strong> <?= e($meta['send_at']) ?> <?php endif; ?>
-      <?php if (!empty($meta['sent_at'])): ?> | <strong>Enviado:</strong> <?= e($meta['sent_at']) ?> <?php endif; ?>
+
+      <?php if (!empty($meta['send_at'])): ?>
+        | <strong>Agendado:</strong> <?= e($meta['send_at']) ?>
+      <?php endif; ?>
+
+      <?php if (!empty($meta['sent_at'])): ?>
+        | <strong>Enviado:</strong> <?= e($meta['sent_at']) ?>
+      <?php endif; ?>
+
+      <?php
+        $who = $meta['sent_by_name'] ?? $meta['created_by_name'] ?? null;
+      ?>
+      <?php if ($who): ?>
+        | <strong>Usuário:</strong> <?= e($who) ?>
+      <?php endif; ?>
     </p>
 
     <?php if (!empty($meta['error_message'])): ?>

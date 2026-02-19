@@ -6,6 +6,9 @@ require_once __DIR__ . '/../app/mailer.php';
 
 require_login();
 
+$u = current_user();
+$userId = (int)($u['id'] ?? 0);
+
 $action = $_GET['action'] ?? '';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$id) redirect('newsletters.php');
@@ -18,21 +21,32 @@ if ($action === 'delete') {
 }
 
 if ($action === 'schedule') {
-  // precisa ter send_at
   $st = $pdo->prepare("SELECT send_at FROM newsletters WHERE id=?");
   $st->execute([$id]);
   $n = $st->fetch();
+
   if (!$n || empty($n['send_at'])) {
     exit('Não dá pra agendar: preencha data/hora no cadastro.');
   }
-  $pdo->prepare("UPDATE newsletters SET status='scheduled', error_message=NULL WHERE id=?")->execute([$id]);
+
+  // marca como scheduled + registra quem "disparou" (quem agendou)
+  $pdo->prepare("
+    UPDATE newsletters
+    SET status='scheduled', error_message=NULL, sent_by_user_id=COALESCE(sent_by_user_id, ?)
+    WHERE id=?
+  ")->execute([$userId, $id]);
+
   redirect('newsletter_preview.php?id=' . $id);
 }
 
 if ($action === 'send_now') {
   try {
-    // trava pra evitar duplo envio
-    $pdo->prepare("UPDATE newsletters SET status='sending', error_message=NULL WHERE id=?")->execute([$id]);
+    // trava e registra usuário do envio
+    $pdo->prepare("
+      UPDATE newsletters
+      SET status='sending', error_message=NULL, sent_by_user_id=?
+      WHERE id=?
+    ")->execute([$userId, $id]);
 
     [$n, $items, $recipients] = get_newsletter_data($id);
     if (count($recipients) === 0) throw new RuntimeException('A empresa não tem destinatários cadastrados.');
@@ -40,6 +54,7 @@ if ($action === 'send_now') {
 
     $payload = render_email_send($id);
     $subject = "Radar de Notícias - " . ($n['company_name'] ?? 'Engaja');
+
     send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds']);
 
     $pdo->prepare("UPDATE newsletters SET status='sent', sent_at=NOW() WHERE id=?")->execute([$id]);

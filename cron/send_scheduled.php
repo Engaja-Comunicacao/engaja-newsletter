@@ -6,7 +6,6 @@ require_once __DIR__ . '/../app/mailer.php';
 
 $pdo = db();
 
-// pega pendentes
 $st = $pdo->prepare("
   SELECT id
   FROM newsletters
@@ -26,12 +25,12 @@ foreach ($rows as $r) {
     $pdo->prepare("UPDATE newsletters SET status='sending', error_message=NULL WHERE id=?")->execute([$id]);
 
     [$n, $items, $recipients] = get_newsletter_data($id);
-
     if (count($recipients) === 0) throw new RuntimeException('Sem destinatários.');
     if (count($items) === 0) throw new RuntimeException('Sem notícias.');
 
     $payload = render_email_send($id);
     $subject = "Radar de Notícias - " . ($n['company_name'] ?? 'Engaja');
+
     send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds']);
 
     $pdo->prepare("UPDATE newsletters SET status='sent', sent_at=NOW() WHERE id=?")->execute([$id]);

@@ -27,10 +27,17 @@ CREATE TABLE companies (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(190) NOT NULL,
   header_image_path VARCHAR(255) NULL, -- ex: /uploads/headers/abc.png
+
+  -- redes:
+  -- social_1_url = instagram
+  -- social_2_url = facebook
+  -- social_3_url = linkedin
+  -- social_4_url = site (se você quiser usar)
   social_1_url VARCHAR(255) NULL,
   social_2_url VARCHAR(255) NULL,
   social_3_url VARCHAR(255) NULL,
   social_4_url VARCHAR(255) NULL,
+
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -48,15 +55,36 @@ CREATE TABLE company_recipients (
 CREATE TABLE newsletters (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   company_id BIGINT UNSIGNED NOT NULL,
+
+  -- quem criou e quem enviou
+  created_by_user_id BIGINT UNSIGNED NOT NULL,
+  sent_by_user_id BIGINT UNSIGNED NULL,
+
+  -- agenda e envio
   send_at DATETIME NULL,
-  status ENUM('draft','scheduled','sending','sent','failed') NOT NULL DEFAULT 'draft',
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   sent_at DATETIME NULL,
+
+  status ENUM('draft','scheduled','sending','sent','failed') NOT NULL DEFAULT 'draft',
   error_message TEXT NULL,
+
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
   CONSTRAINT fk_news_company
     FOREIGN KEY (company_id) REFERENCES companies(id)
     ON DELETE CASCADE,
-  INDEX idx_status_sendat (status, send_at)
+
+  CONSTRAINT fk_news_created_by
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id)
+    ON DELETE RESTRICT,
+
+  CONSTRAINT fk_news_sent_by
+    FOREIGN KEY (sent_by_user_id) REFERENCES users(id)
+    ON DELETE SET NULL,
+
+  INDEX idx_status_sendat (status, send_at),
+  INDEX idx_sentat (sent_at),
+  INDEX idx_created_by (created_by_user_id),
+  INDEX idx_sent_by (sent_by_user_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE newsletter_items (

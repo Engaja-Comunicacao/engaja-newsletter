@@ -3,6 +3,9 @@ require_once __DIR__ . '/../app/auth.php';
 require_once __DIR__ . '/../app/helpers.php';
 require_login();
 
+$u = current_user();
+$userId = (int)($u['id'] ?? 0);
+
 $pdo = db();
 $companies = $pdo->query("SELECT id,name FROM companies ORDER BY name ASC")->fetchAll();
 
@@ -19,8 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $sendAtDb = $sendAt ? date('Y-m-d H:i:s', strtotime($sendAt)) : null;
 
-    $pdo->prepare("INSERT INTO newsletters (company_id, send_at, status) VALUES (?,?, 'draft')")
-        ->execute([$companyId, $sendAtDb]);
+    $pdo->prepare("INSERT INTO newsletters (company_id, send_at, status, created_by_user_id) VALUES (?,?, 'draft', ?)")
+        ->execute([$companyId, $sendAtDb, $userId]);
+
     $newsletterId = (int)$pdo->lastInsertId();
 
     $titles  = $_POST['item_title'] ?? [];

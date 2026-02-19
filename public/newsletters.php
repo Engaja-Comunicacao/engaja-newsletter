@@ -2,9 +2,19 @@
 require_once __DIR__ . '/_header.php';
 
 $rows = db()->query("
-  SELECT n.id, n.status, n.send_at, n.created_at, c.name AS company_name
+  SELECT
+    n.id,
+    n.status,
+    n.send_at,
+    n.sent_at,
+    n.created_at,
+    c.name AS company_name,
+    u_send.name AS sent_by_name,
+    u_create.name AS created_by_name
   FROM newsletters n
   JOIN companies c ON c.id = n.company_id
+  LEFT JOIN users u_send ON u_send.id = n.sent_by_user_id
+  LEFT JOIN users u_create ON u_create.id = n.created_by_user_id
   ORDER BY n.id DESC
 ")->fetchAll();
 ?>
@@ -13,13 +23,26 @@ $rows = db()->query("
   <a class="btn" href="newsletter_form.php">+ Nova Newsletter</a>
 
   <table>
-    <tr><th>ID</th><th>Empresa</th><th>Status</th><th>Envio</th><th>Ações</th></tr>
+    <tr>
+      <th>ID</th>
+      <th>Empresa</th>
+      <th>Status</th>
+      <th>Envio</th>
+      <th>Usuário</th>
+      <th>Ações</th>
+    </tr>
+
     <?php foreach ($rows as $r): ?>
+      <?php
+        $envio = $r['sent_at'] ?? $r['send_at'] ?? null;
+        $userName = $r['sent_by_name'] ?? $r['created_by_name'] ?? null;
+      ?>
       <tr>
         <td>#<?= (int)$r['id'] ?></td>
         <td><?= e($r['company_name']) ?></td>
         <td><?= e($r['status']) ?></td>
-        <td><?= e($r['send_at'] ?? '—') ?></td>
+        <td><?= e($envio ?: '—') ?></td>
+        <td><?= e($userName ?: '—') ?></td>
         <td>
           <a class="btn secondary" href="newsletter_preview.php?id=<?= (int)$r['id'] ?>">Preview</a>
           <a class="btn" href="newsletter_action.php?action=delete&id=<?= (int)$r['id'] ?>" onclick="return confirm('Excluir newsletter?')">Excluir</a>

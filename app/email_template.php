@@ -4,6 +4,32 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/config.php';
 
+/**
+ * Junta URLs sem duplicar barras.
+ */
+function url_join(string $base, string $path): string {
+  $base = rtrim($base, '/');
+  $path = ltrim($path, '/');
+  return $base . '/' . $path;
+}
+
+/**
+ * Converte um caminho público (ex: /uploads/headers/a.png) em caminho absoluto no FS.
+ * Procura dentro de /public.
+ */
+function public_fs_path(string $publicPath): ?string {
+  $publicPath = '/' . ltrim($publicPath, '/');
+
+  $base = realpath(__DIR__ . '/../public');
+  if (!$base) return null;
+
+  $full = $base . $publicPath;
+  $full = str_replace(['\\'], ['/'], $full);
+
+  if (!file_exists($full)) return null;
+  return $full;
+}
+
 function get_newsletter_data(int $newsletterId): array {
   $pdo = db();
 
@@ -188,31 +214,35 @@ function render_email_preview_html(int $newsletterId): string {
 
 /**
  * SEND: retorna payload com HTML + embeds (CID)
- * Exigido por você:
+ * Exigido:
  * $payload = render_email_send($id);
  * send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds']);
+ * embeds no formato: [ 'cid' => '/abs/path/no/fs' ]
  */
 function render_email_send(int $newsletterId): array {
   [$n, $items] = get_newsletter_data($newsletterId);
 
   $embeds = [];
 
-  // Topo (upload da empresa)
+  // Topo
   $headerPublic = $n['header_image_path'] ?: '/assets/engaja.png';
   $headerFs = public_fs_path($headerPublic);
-  $embeds['header_img'] = $headerFs;
+  if ($headerFs) {
+    $embeds['header_img'] = $headerFs;
+  }
 
-  // Logo Engaja (fixo)
+  // Logo Engaja
   $logoFs = public_fs_path('/assets/engaja.png');
-  $embeds['engaja_logo'] = $logoFs;
+  if ($logoFs) {
+    $embeds['engaja_logo'] = $logoFs;
+  }
 
-  // Ícones redes (fixos)
+  // Ícones redes
   $rede1Fs = public_fs_path('/assets/rede1.png');
   $rede2Fs = public_fs_path('/assets/rede2.png');
   $rede3Fs = public_fs_path('/assets/rede3.png');
   $rede4Fs = public_fs_path('/assets/rede4.png');
 
-  // Social links (somem se vazio)
   $socials = [
     ['url' => trim((string)($n['social_1_url'] ?? '')), 'cid' => 'rede1', 'fs' => $rede1Fs],
     ['url' => trim((string)($n['social_2_url'] ?? '')), 'cid' => 'rede2', 'fs' => $rede2Fs],
@@ -223,6 +253,7 @@ function render_email_send(int $newsletterId): array {
   $socialHtml = '';
   foreach ($socials as $s) {
     if ($s['url'] === '') continue;
+    if (!$s['fs']) continue;
     $embeds[$s['cid']] = $s['fs'];
     $socialHtml .= '<a href="' . e($s['url']) . '"><img src="cid:' . e($s['cid']) . '" width="28" style="margin:0 6px; display:inline-block;"></a>';
   }
