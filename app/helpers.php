@@ -93,27 +93,34 @@ function format_ptbr_upper(?string $dateYmd): string {
   return $day . ' DE ' . $m;
 }
 
-function public_fs_path(string $publicPath): string {
-  // $publicPath tipo: /uploads/headers/x.png ou /assets/engaja.png
-  if ($publicPath === '' || $publicPath[0] !== '/') {
-    throw new RuntimeException('Caminho público inválido.');
-  }
-  $base = realpath(__DIR__ . '/../public');
-  $full = realpath(__DIR__ . '/../public' . $publicPath);
+/**
+ * Converte um caminho público (ex: /uploads/headers/a.png) em caminho absoluto no FS.
+ * Procura dentro de /public.
+ */
+function public_fs_path(string $publicPath): ?string {
+  $publicPath = '/' . ltrim($publicPath, '/');
 
-  // Se ainda não existir (uploads recém-criados), tenta montar sem realpath
-  if ($full === false) {
-    $full = __DIR__ . '/../public' . $publicPath;
-  }
+  $base = realpath(__DIR__ . '/../public');
+  if (!$base) return null;
+
+  // Caminho "cru"
+  $raw = __DIR__ . '/../public' . $publicPath;
+
+  // Se existir, ok. Se não, tenta realpath (ou vice-versa)
+  $full = file_exists($raw) ? $raw : realpath($raw);
+  if ($full === false || $full === null) return null;
 
   // Proteção simples contra traversal
-  if ($base && strpos(str_replace('\\','/',$full), str_replace('\\','/',$base)) !== 0) {
-    throw new RuntimeException('Path traversal detectado.');
-  }
+  $baseN = str_replace('\\', '/', $base);
+  $fullN = str_replace('\\', '/', $full);
+  if (strpos($fullN, $baseN) !== 0) return null;
 
   return $full;
 }
 
+/**
+ * Junta URLs sem duplicar barras.
+ */
 function url_join(string $base, string $path): string {
   return rtrim($base, '/') . '/' . ltrim($path, '/');
 }

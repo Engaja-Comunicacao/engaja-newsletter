@@ -4,32 +4,6 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/config.php';
 
-/**
- * Junta URLs sem duplicar barras.
- */
-function url_join(string $base, string $path): string {
-  $base = rtrim($base, '/');
-  $path = ltrim($path, '/');
-  return $base . '/' . $path;
-}
-
-/**
- * Converte um caminho público (ex: /uploads/headers/a.png) em caminho absoluto no FS.
- * Procura dentro de /public.
- */
-function public_fs_path(string $publicPath): ?string {
-  $publicPath = '/' . ltrim($publicPath, '/');
-
-  $base = realpath(__DIR__ . '/../public');
-  if (!$base) return null;
-
-  $full = $base . $publicPath;
-  $full = str_replace(['\\'], ['/'], $full);
-
-  if (!file_exists($full)) return null;
-  return $full;
-}
-
 function get_newsletter_data(int $newsletterId): array {
   $pdo = db();
 
@@ -217,7 +191,7 @@ function render_email_preview_html(int $newsletterId): string {
  * Exigido:
  * $payload = render_email_send($id);
  * send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds']);
- * embeds no formato: [ 'cid' => '/abs/path/no/fs' ]
+ * embeds: [ 'cid' => '/abs/path/no/fs' ]
  */
 function render_email_send(int $newsletterId): array {
   [$n, $items] = get_newsletter_data($newsletterId);
@@ -227,15 +201,11 @@ function render_email_send(int $newsletterId): array {
   // Topo
   $headerPublic = $n['header_image_path'] ?: '/assets/engaja.png';
   $headerFs = public_fs_path($headerPublic);
-  if ($headerFs) {
-    $embeds['header_img'] = $headerFs;
-  }
+  if ($headerFs) $embeds['header_img'] = $headerFs;
 
   // Logo Engaja
   $logoFs = public_fs_path('/assets/engaja.png');
-  if ($logoFs) {
-    $embeds['engaja_logo'] = $logoFs;
-  }
+  if ($logoFs) $embeds['engaja_logo'] = $logoFs;
 
   // Ícones redes
   $rede1Fs = public_fs_path('/assets/rede1.png');
@@ -246,6 +216,7 @@ function render_email_send(int $newsletterId): array {
   $socials = [
     ['url' => trim((string)($n['social_1_url'] ?? '')), 'cid' => 'rede1', 'fs' => $rede1Fs],
     ['url' => trim((string)($n['social_2_url'] ?? '')), 'cid' => 'rede2', 'fs' => $rede2Fs],
+    ['url' => trim((string)($n['social_3_url'] ?? '')), 'cid' => 'rede3', 'fs' => $rede3Fs],
     ['url' => trim((string)($n['social_3_url'] ?? '')), 'cid' => 'rede3', 'fs' => $rede3Fs],
     ['url' => trim((string)($n['social_4_url'] ?? '')), 'cid' => 'rede4', 'fs' => $rede4Fs],
   ];
