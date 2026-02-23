@@ -35,7 +35,9 @@ function get_newsletter_data(int $newsletterId): array {
 }
 
 function render_news_block_preview(array $item): string {
-  $line = trim((format_ptbr_upper($item['news_date'] ?? null) ?: '') . ' - ' . strtoupper($item['portal'] ?? ''));
+  $line = trim(
+    (format_ptbr_upper($item['news_date'] ?? null) ?: '') . ' - ' . upper_ptbr($item['portal'] ?? '')
+  );
 
   $newsUrl = $item['link_url'] ? e($item['link_url']) : '#';
   $pdfUrl  = $item['pdf_path'] ? e(url_join(APP_URL, $item['pdf_path'])) : null;
@@ -225,7 +227,9 @@ function render_email_send(int $newsletterId): array {
   // Notícias
   $newsBlocks = '';
   foreach ($items as $it) {
-    $line = trim((format_ptbr_upper($it['news_date'] ?? null) ?: '') . ' - ' . strtoupper($it['portal'] ?? ''));
+    $line = trim(
+      (format_ptbr_upper($it['news_date'] ?? null) ?: '') . ' - ' . upper_ptbr($it['portal'] ?? '')
+    );
 
     $newsUrl = $it['link_url'] ? e($it['link_url']) : '#';
     $pdfUrl  = $it['pdf_path'] ? e(url_join(APP_URL, $it['pdf_path'])) : null;

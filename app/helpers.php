@@ -129,3 +129,14 @@ function public_fs_path(string $publicPath): string {
 function url_join(string $base, string $path): string {
   return rtrim($base, '/') . '/' . ltrim($path, '/');
 }
+
+function upper_ptbr(string $s): string {
+  $s = trim($s);
+  if ($s === '') return '';
+
+  if (function_exists('mb_strtoupper')) {
+    return mb_strtoupper($s, 'UTF-8');
+  }
+
+  return strtoupper($s);
+}
