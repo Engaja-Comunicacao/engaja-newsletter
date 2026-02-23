@@ -21,31 +21,30 @@ function send_newsletter_email(string $subject, string $html, array $recipients,
 
   $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
 
+  $mail->addAddress(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
+
   foreach ($recipients as $r) {
     $r = trim((string)$r);
     if ($r === '') continue;
-    $mail->addAddress($r);
+    $mail->addBCC($r);
   }
 
   foreach ($embeds as $cid => $path) {
     $cid = trim((string)$cid);
     $path = (string)$path;
 
-    if ($cid === '') continue;
-    if ($path === '') continue;
+    if ($cid === '' || $path === '') continue;
 
     if (!file_exists($path)) {
-      throw new RuntimeException("Embed não encontrado: $cid => $path");;
+      throw new RuntimeException("Embed não encontrado: $cid => $path");
     }
 
-    // 3º parâmetro ajuda alguns clientes, e facilita debug
     $mail->addEmbeddedImage($path, $cid, basename($path));
   }
 
   $mail->isHTML(true);
   $mail->Subject = $subject;
   $mail->Body = $html;
-
   $mail->AltBody = 'Radar de Notícias';
 
   $mail->send();
