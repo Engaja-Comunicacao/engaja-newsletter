@@ -33,7 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $dates   = $_POST['item_date'] ?? [];
     $links   = $_POST['item_link'] ?? [];
 
-    if (count($titles) === 0) throw new RuntimeException('Adicione pelo menos 1 notícia.');
+    $hasAny = false;
+    foreach (($titles ?? []) as $t) {
+      if (trim((string)$t) !== '') { $hasAny = true; break; }
+    }
+    if (!$hasAny) throw new RuntimeException('Adicione pelo menos 1 notícia.');
 
     $ins = $pdo->prepare("
       INSERT INTO newsletter_items (newsletter_id, portal, news_date, title, description, link_url, pdf_path, sort_order)
