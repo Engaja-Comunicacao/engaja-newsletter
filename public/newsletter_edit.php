@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $hasAny = false;
     foreach (($titles ?? []) as $t) {
-    if (trim((string)$t) !== '') { $hasAny = true; break; }
+        if (trim((string)$t) !== '') { $hasAny = true; break; }
     }
     if (!$hasAny) throw new RuntimeException('Adicione pelo menos 1 notícia.');
 
