@@ -30,7 +30,9 @@ require_once __DIR__ . '/_header.php';
       <a class="btn secondary" href="newsletters.php">Voltar</a>
     </div>
     <div style="text-align:right;">
-      <a class="btn secondary" href="newsletter_edit.php?id=<?= $id ?>">Editar</a>
+      <?php if ($meta && in_array($meta['status'], ['draft','failed'], true)): ?>
+        <a class="btn secondary" href="newsletter_edit.php?id=<?= $id ?>">Editar</a>
+      <?php endif; ?>
       <a class="btn secondary" href="newsletter_action.php?action=schedule&id=<?= $id ?>" onclick="return confirm('Confirmar agendamento?')">Agendar</a>
       <a class="btn" href="newsletter_action.php?action=send_now&id=<?= $id ?>" onclick="return confirm('Enviar agora?')">Enviar agora</a>
     </div>
