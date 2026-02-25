@@ -60,10 +60,24 @@ function upload_image(string $field, string $destDir): ?string {
   return '/uploads/headers/' . $name;
 }
 
+function upload_error_message(int $code): string {
+  return match ($code) {
+    UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Arquivo muito grande. Reduza o PDF ou aumente o limite de upload do servidor.',
+    UPLOAD_ERR_PARTIAL => 'Upload incompleto. Tente novamente.',
+    UPLOAD_ERR_NO_TMP_DIR => 'Servidor sem pasta temporária configurada.',
+    UPLOAD_ERR_CANT_WRITE => 'Servidor sem permissão para salvar o arquivo.',
+    UPLOAD_ERR_EXTENSION => 'Upload bloqueado por extensão do PHP.',
+    default => 'Erro no upload do arquivo.'
+  };
+}
+
 function upload_pdf_from_array(string $field, int $idx, string $destDir): ?string {
   if (empty($_FILES[$field]) || !isset($_FILES[$field]['name'][$idx])) return null;
   if ($_FILES[$field]['error'][$idx] === UPLOAD_ERR_NO_FILE) return null;
-  if ($_FILES[$field]['error'][$idx] !== UPLOAD_ERR_OK) throw new RuntimeException('Erro no upload do PDF.');
+
+  if ($_FILES[$field]['error'][$idx] !== UPLOAD_ERR_OK) {
+    throw new RuntimeException(upload_error_message((int)$_FILES[$field]['error'][$idx]));
+  }
 
   $tmp = $_FILES[$field]['tmp_name'][$idx];
   $finfo = new finfo(FILEINFO_MIME_TYPE);

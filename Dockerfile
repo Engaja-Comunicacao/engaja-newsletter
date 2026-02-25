@@ -37,4 +37,16 @@ RUN mkdir -p /var/www/html/storage \
  && chown -R www-data:www-data /var/www/html/storage \
  && chmod -R 775 /var/www/html/storage
 
+# Limites e logging do PHP (produção)
+RUN { \
+  echo "upload_max_filesize=20M"; \
+  echo "post_max_size=25M"; \
+  echo "max_file_uploads=50"; \
+  echo "max_input_vars=5000"; \
+  echo "memory_limit=256M"; \
+  echo "display_errors=Off"; \
+  echo "log_errors=On"; \
+  echo "error_log=/var/www/html/storage/php_errors.log"; \
+} > /usr/local/etc/php/conf.d/engaja.ini
+
 EXPOSE 80

@@ -92,7 +92,7 @@ CREATE TABLE newsletter_items (
   newsletter_id BIGINT UNSIGNED NOT NULL,
   portal VARCHAR(120) NULL,
   news_date DATE NULL,
-  title VARCHAR(255) NOT NULL,
+  title TEXT NOT NULL,
   description TEXT NULL,
   link_url VARCHAR(500) NULL,
   pdf_path VARCHAR(255) NULL, -- ex: /uploads/pdfs/abc.pdf
