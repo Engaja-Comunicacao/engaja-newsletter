@@ -9,7 +9,9 @@ function get_newsletter_data(int $newsletterId): array {
 
   $st = $pdo->prepare("
     SELECT n.*, c.name AS company_name, c.header_image_path,
-           c.social_1_url, c.social_2_url, c.social_3_url, c.social_4_url
+           c.social_1_url, c.social_2_url, c.social_3_url, c.social_4_url,
+           c.smtp_enabled, c.smtp_host, c.smtp_port, c.smtp_user, c.smtp_pass_enc, c.smtp_secure,
+           c.smtp_from_email, c.smtp_from_name
     FROM newsletters n
     JOIN companies c ON c.id = n.company_id
     WHERE n.id = ?
@@ -196,14 +198,11 @@ function render_email_send(int $newsletterId): array {
 
   $embeds = [];
 
-  // Topo
   $headerPublic = $n['header_image_path'] ?: '/assets/engaja.png';
   $embeds['header_img'] = public_fs_path($headerPublic);
 
-  // Logo Engaja
   $embeds['engaja_logo'] = public_fs_path('/assets/engaja.png');
 
-  // Ícones redes
   $rede1Fs = public_fs_path('/assets/rede1.png');
   $rede2Fs = public_fs_path('/assets/rede2.png');
   $rede3Fs = public_fs_path('/assets/rede3.png');
@@ -224,7 +223,6 @@ function render_email_send(int $newsletterId): array {
     $socialHtml .= '<a href="' . e($s['url']) . '"><img src="cid:' . e($s['cid']) . '" width="28" style="margin:0 6px; display:inline-block;"></a>';
   }
 
-  // Notícias
   $newsBlocks = '';
   foreach ($items as $it) {
     $line = trim(

@@ -8,6 +8,7 @@ services:
       - "8080:80"
     environment:
       APP_URL: "https://newsletter.engajacomunicacao.com.br"
+      APP_CRYPT_KEY: "KlEGVWdZ36cE/9jUi0flVBMW91Oigo55iZx2MFYiNdDWi8maRAENBlaip9L6YHa5"
       DB_HOST: db
       DB_PORT: 3306
       DB_NAME: engaja

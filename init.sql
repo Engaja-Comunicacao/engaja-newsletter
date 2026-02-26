@@ -28,15 +28,21 @@ CREATE TABLE companies (
   name VARCHAR(190) NOT NULL,
   header_image_path VARCHAR(255) NULL, -- ex: /uploads/headers/abc.png
 
-  -- redes:
-  -- social_1_url = instagram
-  -- social_2_url = facebook
-  -- social_3_url = linkedin
-  -- social_4_url = site (se você quiser usar)
+  -- redes
   social_1_url VARCHAR(255) NULL,
   social_2_url VARCHAR(255) NULL,
   social_3_url VARCHAR(255) NULL,
   social_4_url VARCHAR(255) NULL,
+
+  -- SMTP por empresa (opcional)
+  smtp_enabled TINYINT(1) NOT NULL DEFAULT 0,
+  smtp_host VARCHAR(190) NULL,
+  smtp_port INT NULL,
+  smtp_user VARCHAR(190) NULL,
+  smtp_pass_enc TEXT NULL, -- senha criptografada (ver APP_CRYPT_KEY)
+  smtp_secure ENUM('tls','ssl','none') NULL DEFAULT 'tls',
+  smtp_from_email VARCHAR(190) NULL,
+  smtp_from_name  VARCHAR(190) NULL,
 
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
