@@ -133,8 +133,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // recipients
-    $emails = $_POST['recipient_emails'] ?? [];
-    $emails = array_values(array_unique(array_filter(array_map('trim', $emails))));
+    $raw = $_POST['recipient_emails'] ?? [];
+    if (!is_array($raw)) $raw = [$raw];
+
+    $flat = [];
+    foreach ($raw as $item) {
+      $item = trim((string)$item);
+      if ($item === '') continue;
+
+      // aceita também itens colados com vírgula/; e quebras
+      $parts = preg_split('/[\s,;]+/u', $item, -1, PREG_SPLIT_NO_EMPTY);
+      foreach ($parts as $p) $flat[] = trim($p);
+    }
+
+    // remove duplicados case-insensitive preservando o "original"
+    $uniq = [];
+    foreach ($flat as $em) {
+      $k = mb_strtolower($em, 'UTF-8');
+      $uniq[$k] = $em;
+    }
+    $emails = array_values($uniq);
 
     $pdo->prepare("DELETE FROM company_recipients WHERE company_id=?")->execute([$id]);
     $ins = $pdo->prepare("INSERT INTO company_recipients (company_id, email) VALUES (?,?)");
