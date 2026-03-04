@@ -12,8 +12,20 @@ function send_newsletter_email(
   array $embeds,
   ?array $smtp = null
 ): void {
-  $mail = new PHPMailer(true);
-  $mail->CharSet = 'UTF-8';
+
+  $MAX_BCC_PER_EMAIL = 90;
+
+  $clean = [];
+  foreach ($recipients as $r) {
+    $r = trim((string)$r);
+    if ($r === '') continue;
+    $clean[strtolower($r)] = $r;
+  }
+  $recipients = array_values($clean);
+
+  if (count($recipients) === 0) {
+    throw new RuntimeException('Sem destinatários.');
+  }
 
   // Decide SMTP (empresa ou Engaja)
   $useCompany = false;
@@ -42,49 +54,59 @@ function send_newsletter_email(
   if ($fromEmail === '') $fromEmail = $user;
   if ($fromName === '')  $fromName  = ($useCompany ? $user : MAIL_FROM_NAME);
 
-  $mail->isSMTP();
-  $mail->Host = $host;
-  $mail->SMTPAuth = true;
-  $mail->Username = $user;
-  $mail->Password = $pass;
-  $mail->Port = $port;
+  $batches = array_chunk($recipients, $MAX_BCC_PER_EMAIL);
 
-  if ($secure === 'ssl') {
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-  } elseif ($secure === 'none') {
-    $mail->SMTPSecure = false;
-    $mail->SMTPAutoTLS = false;
-  } else {
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-  }
+  foreach ($batches as $idx => $batch) {
+    $mail = new PHPMailer(true);
+    $mail->CharSet = 'UTF-8';
 
-  // Remetente + “To” (manda pra si mesmo)
-  $mail->setFrom($fromEmail, $fromName);
-  $mail->addAddress($fromEmail, $fromName);
+    $mail->isSMTP();
+    $mail->Host = $host;
+    $mail->SMTPAuth = true;
+    $mail->Username = $user;
+    $mail->Password = $pass;
+    $mail->Port = $port;
 
-  // Destinatários reais em BCC
-  foreach ($recipients as $r) {
-    $r = trim((string)$r);
-    if ($r === '') continue;
-    $mail->addBCC($r);
-  }
-
-  // Embeds
-  foreach ($embeds as $cid => $path) {
-    $cid = trim((string)$cid);
-    $path = (string)$path;
-    if ($cid === '' || $path === '') continue;
-
-    if (!file_exists($path)) {
-      throw new RuntimeException("Embed não encontrado: $cid => $path");
+    if ($secure === 'ssl') {
+      $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+    } elseif ($secure === 'none') {
+      $mail->SMTPSecure = false;
+      $mail->SMTPAutoTLS = false;
+    } else {
+      $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     }
-    $mail->addEmbeddedImage($path, $cid, basename($path));
+
+    // Remetente + “To” (manda pra si mesmo)
+    $mail->setFrom($fromEmail, $fromName);
+    $mail->addAddress($fromEmail, $fromName);
+
+    // Destinatários reais em BCC (lote)
+    foreach ($batch as $r) {
+      $mail->addBCC($r);
+    }
+
+    // Embeds
+    foreach ($embeds as $cid => $path) {
+      $cid = trim((string)$cid);
+      $path = (string)$path;
+      if ($cid === '' || $path === '') continue;
+
+      if (!file_exists($path)) {
+        throw new RuntimeException("Embed não encontrado: $cid => $path");
+      }
+      $mail->addEmbeddedImage($path, $cid, basename($path));
+    }
+
+    $mail->isHTML(true);
+
+    // opcional: deixar subject único por lote (ajuda a rastrear)
+    $mail->Subject = count($batches) > 1
+      ? $subject . " (Lote " . ($idx + 1) . "/" . count($batches) . ")"
+      : $subject;
+
+    $mail->Body = $html;
+    $mail->AltBody = 'Radar de Notícias';
+
+    $mail->send();
   }
-
-  $mail->isHTML(true);
-  $mail->Subject = $subject;
-  $mail->Body = $html;
-  $mail->AltBody = 'Radar de Notícias';
-
-  $mail->send();
 }
