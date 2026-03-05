@@ -99,10 +99,7 @@ function send_newsletter_email(
 
     $mail->isHTML(true);
 
-    // opcional: deixar subject único por lote (ajuda a rastrear)
-    $mail->Subject = count($batches) > 1
-      ? $subject . " (Lote " . ($idx + 1) . "/" . count($batches) . ")"
-      : $subject;
+    $mail->Subject = $subject;
 
     $mail->Body = $html;
     $mail->AltBody = 'Radar de Notícias';
