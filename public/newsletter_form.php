@@ -22,16 +22,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $sendAtDb = $sendAt ? date('Y-m-d H:i:s', strtotime($sendAt)) : null;
 
+    $pdo->beginTransaction();
+
+    // 1. Cria a Newsletter
     $pdo->prepare("INSERT INTO newsletters (company_id, send_at, status, created_by_user_id) VALUES (?,?, 'draft', ?)")
         ->execute([$companyId, $sendAtDb, $userId]);
-
     $newsletterId = (int)$pdo->lastInsertId();
 
+    // 2. Processa Categorias
+    $catNames = $_POST['category_name'] ?? [];
+    $catRefs  = $_POST['category_ref'] ?? [];
+    $catIdMap = []; // Vai guardar: 'ref_xyz' => ID_REAL_DO_BANCO
+
+    $insCat = $pdo->prepare("INSERT INTO newsletter_categories (newsletter_id, name, sort_order) VALUES (?,?,?)");
+    
+    foreach ($catNames as $i => $cName) {
+        $cName = trim($cName);
+        if ($cName === '') continue;
+        
+        $ref = trim($catRefs[$i] ?? '');
+        $insCat->execute([$newsletterId, $cName, $i]);
+        $realId = (int)$pdo->lastInsertId();
+        
+        if ($ref) {
+            $catIdMap[$ref] = $realId;
+        }
+    }
+
+    // 3. Processa Notícias
     $titles  = $_POST['item_title'] ?? [];
     $descs   = $_POST['item_desc'] ?? [];
     $portals = $_POST['item_portal'] ?? [];
     $dates   = $_POST['item_date'] ?? [];
     $links   = $_POST['item_link'] ?? [];
+    $itemRefs = $_POST['item_category_ref'] ?? [];
 
     $hasAny = false;
     foreach (($titles ?? []) as $t) {
@@ -39,9 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!$hasAny) throw new RuntimeException('Adicione pelo menos 1 notícia.');
 
-    $ins = $pdo->prepare("
-      INSERT INTO newsletter_items (newsletter_id, portal, news_date, title, description, link_url, pdf_path, sort_order)
-      VALUES (?,?,?,?,?,?,?,?)
+    $insItem = $pdo->prepare("
+      INSERT INTO newsletter_items (newsletter_id, category_id, portal, news_date, title, description, link_url, pdf_path, sort_order)
+      VALUES (?,?,?,?,?,?,?,?,?)
     ");
 
     for ($i=0; $i<count($titles); $i++) {
@@ -52,12 +76,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $date   = trim($dates[$i] ?? '');
       $desc   = trim($descs[$i] ?? '');
       $link   = trim($links[$i] ?? '');
+      $itemRef = trim($itemRefs[$i] ?? '');
+
+      // Pega o ID real da categoria mapeada ou NULL se não tiver categoria
+      $categoryIdDb = $catIdMap[$itemRef] ?? null;
 
       $dateDb = $date ? date('Y-m-d', strtotime($date)) : null;
       $pdfPath = upload_pdf_from_array('item_pdf', $i, UPLOAD_DIR_PDFS);
 
-      $ins->execute([
+      $insItem->execute([
         $newsletterId,
+        $categoryIdDb,
         $portal ?: null,
         $dateDb,
         $title,
@@ -68,8 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       ]);
     }
 
+    $pdo->commit();
     redirect('newsletter_preview.php?id=' . $newsletterId);
   } catch (Throwable $t) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
     $error = $t->getMessage();
   }
 }
@@ -100,15 +131,30 @@ require_once __DIR__ . '/_header.php';
     <hr>
 
     <div class="row" style="align-items:center;">
-      <div><h3 style="margin:0;">Notícias</h3></div>
+      <div><h3 style="margin:0;">Categorias (Opcional)</h3></div>
       <div style="text-align:right;">
-        <button type="button" class="secondary" onclick="addNewsItem()">+ Adicionar notícia</button>
+        <button type="button" class="secondary" onclick="addCategory()">
+          + Criar categoria
+        </button>
       </div>
     </div>
+    
+    <div id="newsItems"></div> 
 
-    <div id="newsItems"></div>
+    <hr style="margin-top: 24px; border-top: 2px dashed #ddd;">
 
-    <button class="btn" style="margin-top:16px;">Ir para preview</button>
+    <div class="row" style="align-items:center;">
+      <div><h3 style="margin:0;">Notícias Gerais (Sem Categoria)</h3></div>
+      <div style="text-align:right;">
+        <button type="button" class="secondary" onclick="addNewsItem()">
+          + Adicionar notícia geral
+        </button>
+      </div>
+    </div>
+    
+    <div id="generalNewsItems"></div>
+
+    <button class="btn" style="margin-top:24px;">Ir para preview</button>
   </form>
 </main>
 

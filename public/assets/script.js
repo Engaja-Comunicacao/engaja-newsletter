@@ -89,61 +89,119 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(addEmailTag, 0);
   });
 });
-  
-// Newsletter items
-function addNewsItem(existingItems) {
-  const wrap = document.getElementById('newsItems');
-  if (!wrap) return;
-  // Se veio lista de itens (modo edição), renderiza todos de uma vez
-  if (Array.isArray(existingItems)) {
-    wrap.innerHTML = '';
-    existingItems.forEach(item => addNewsItem(item));
-    return;
-  }
-  // Se veio 1 item (modo edição), usa como defaults
-  const item = existingItems || null;
-  const box = document.createElement('div');
-  box.className = 'card';
-  box.style.marginTop = '16px';
+
+// =========================
+// CATEGORIES & ITEMS
+// =========================
+
+function generateRef() {
+  return 'ref_' + Math.random().toString(36).substr(2, 9);
+}
+
+function addCategory(name = '', categoryId = '', ref = '') {
+  // Se não vier referência, gera uma nova (usada para mapear os itens no PHP)
+  const catRef = ref || categoryId || generateRef();
+
+  const html = `
+    <div class="category card" id="${catRef}" style="border:1px solid #ddd; padding:16px; margin-top:16px; background:#f9fafb;">
+      <div style="display:flex; gap:10px; margin-bottom: 12px; align-items:center;">
+        <input type="hidden" name="category_id[]" value="${categoryId}">
+        <input type="hidden" name="category_ref[]" value="${catRef}">
+        
+        <input name="category_name[]" value="${escapeHtml(name)}" placeholder="Nome da categoria (Ex: Administrativo)" style="flex:1; margin:0;" required>
+        
+        <button type="button" onclick="document.getElementById('${catRef}').remove()" class="secondary" style="margin:0;">
+          Remover Categoria
+        </button>
+      </div>
+
+      <div id="items_${catRef}"></div>
+
+      <button type="button" class="secondary" onclick="addNewsItem(null, '${catRef}')" style="margin-top:10px;">
+        + Adicionar notícia nesta categoria
+      </button>
+    </div>
+  `;
+
+  document.getElementById('newsItems').insertAdjacentHTML('beforeend', html);
+  return catRef;
+}
+
+function addNewsItem(item = null, catRef = '') {
+  // Se tem ref da categoria, coloca dentro dela. Senão, vai pro container geral.
+  const container = catRef ? document.getElementById(`items_${catRef}`) : document.getElementById('generalNewsItems');
+  if (!container) return;
+
   const portal = item?.portal ?? '';
-  const newsDate = item?.news_date ?? ''; // já vem YYYY-MM-DD do banco
+  const newsDate = item?.news_date ?? '';
   const title = item?.title ?? '';
   const desc = item?.description ?? '';
   const link = item?.link_url ?? '';
   const pdfPath = item?.pdf_path ?? '';
   const itemId = item?.id ?? '';
+  // Se for edit e já tiver category_id do banco, usamos ele como referência.
+  const actualCatRef = catRef || item?.category_id || '';
+
   const pdfHtml = pdfPath
-    ? `<div style="margin-top:6px;">
-        <small class="muted">PDF atual:</small>
-        <a href="${pdfPath}" target="_blank" rel="noopener noreferrer">abrir</a>
-      </div>`
+    ? `<div><small>PDF atual:</small> <a href="${pdfPath}" target="_blank">abrir</a></div>`
     : '';
+
+  const box = document.createElement('div');
+  box.className = 'card';
+  box.style.marginTop = '10px';
+  box.style.borderLeft = '4px solid #3b82f6';
+
   box.innerHTML = `
     <input type="hidden" name="item_id[]" value="${itemId}">
     <input type="hidden" name="item_keep_pdf[]" value="${pdfPath}">
-    <div class="row">
-      <div>
-        <label><small class="muted">Portal</small></label>
-        <input name="item_portal[]" placeholder="Portal (ex: MegaWhat)" value="${escapeHtml(portal)}">
-      </div>
-      <div>
-        <label><small class="muted">Data</small></label>
-        <input type="date" name="item_date[]" value="${escapeAttr(newsDate)}">
-      </div>
+    <input type="hidden" name="item_category_ref[]" value="${actualCatRef}">
+
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+      <input name="item_portal[]" placeholder="Portal" value="${escapeHtml(portal)}" style="flex:1;">
+      <input type="date" name="item_date[]" value="${escapeHtml(newsDate)}">
     </div>
-    <label><small class="muted">Título</small></label>
-    <input name="item_title[]" placeholder="Título da notícia" required value="${escapeAttr(title)}">
-    <label><small class="muted">Descrição</small></label>
-    <textarea name="item_desc[]" placeholder="Descrição">${escapeHtml(desc)}</textarea>
-    <label><small class="muted">Link da notícia</small></label>
-    <input name="item_link[]" placeholder="https://..." value="${escapeAttr(link)}">
-    <label><small class="muted">PDF (opcional)</small></label>
+    
+    <input name="item_title[]" placeholder="Título" value="${escapeHtml(title)}" required style="width:100%; margin-bottom:10px;">
+    <textarea name="item_desc[]" placeholder="Descrição" style="width:100%; margin-bottom:10px;">${escapeHtml(desc)}</textarea>
+    <input name="item_link[]" placeholder="Link" value="${escapeHtml(link)}" style="width:100%; margin-bottom:10px;">
+
     ${pdfHtml}
-    <input type="file" name="item_pdf[]" accept="application/pdf">
-    <button type="button" class="secondary" onclick="this.parentElement.remove()">Remover notícia</button>
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <input type="file" name="item_pdf[]" accept="application/pdf">
+      <button type="button" onclick="this.parentElement.parentElement.remove()">Remover</button>
+    </div>
   `;
-  wrap.appendChild(box);
+
+  container.appendChild(box);
 }
+
+// =========================
+// RENDER EDIT
+// =========================
+
+function renderEdit(categories, items) {
+  document.getElementById('newsItems').innerHTML = '';
+  document.getElementById('generalNewsItems').innerHTML = '';
+
+  // Renderiza categorias
+  categories.forEach(cat => {
+    // Passa o ID real como referência para os itens acharem
+    addCategory(cat.name, cat.id, cat.id); 
+  });
+
+  // Renderiza itens
+  items.forEach(item => {
+    if (item.category_id) {
+      addNewsItem(item, item.category_id); // Joga na categoria
+    } else {
+      addNewsItem(item, ''); // Joga nas gerais
+    }
+  });
+}
+
+// =========================
+// UTILS
+// =========================
 
 function escapeHtml(str) {
   return String(str ?? '')
