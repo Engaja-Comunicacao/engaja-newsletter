@@ -22,9 +22,11 @@ function get_newsletter_data(int $newsletterId): array {
   if (!$n) throw new RuntimeException('Newsletter não encontrada.');
 
   $st = $pdo->prepare("
-    SELECT * FROM newsletter_items
-    WHERE newsletter_id = ?
-    ORDER BY sort_order ASC, id ASC
+    SELECT i.*, c.name AS category_name
+    FROM newsletter_items i
+    LEFT JOIN newsletter_categories c ON c.id = i.category_id
+    WHERE i.newsletter_id = ?
+    ORDER BY i.sort_order ASC, i.id ASC
   ");
   $st->execute([$newsletterId]);
   $items = $st->fetchAll();
@@ -37,9 +39,26 @@ function get_newsletter_data(int $newsletterId): array {
 }
 
 function render_news_block_preview(array $item): string {
-  $line = trim(
-    (format_ptbr_upper($item['news_date'] ?? null) ?: '') . ' - ' . upper_ptbr($item['portal'] ?? '')
-  );
+  $category = trim($item['category_name'] ?? '');
+  $categoryHtml = '';
+
+  if ($category !== '') {
+    $categoryHtml = '
+      <tr>
+        <td style="padding:20px 20px 0 20px;">
+          <span style="font-size:13px; font-weight:bold; color:#1f2937;">
+            ' . e(upper_ptbr($category)) . '
+          </span>
+        </td>
+      </tr>
+    ';
+  }
+  
+  $date = format_ptbr_upper($item['news_date'] ?? null);
+  $portal = upper_ptbr($item['portal'] ?? '');
+
+  $lineParts = array_filter([$date, $portal]);
+  $line = implode(' - ', $lineParts);
 
   $newsUrl = $item['link_url'] ? e($item['link_url']) : '#';
   $pdfUrl  = $item['pdf_path'] ? e(url_join(APP_URL, $item['pdf_path'])) : null;
@@ -59,6 +78,7 @@ function render_news_block_preview(array $item): string {
   }
 
   return '
+    ' . $categoryHtml . '
     <tr>
       <td style="padding:24px 20px 10px 20px;">
         <span style="font-size:12px; color:#777777;">' . e($line) . '</span>
@@ -219,15 +239,38 @@ function render_email_send(int $newsletterId): array {
   foreach ($socials as $s) {
     if ($s['url'] === '') continue;
     if (!$s['fs']) continue;
+
     $embeds[$s['cid']] = $s['fs'];
-    $socialHtml .= '<a href="' . e($s['url']) . '"><img src="cid:' . e($s['cid']) . '" width="28" style="margin:0 6px; display:inline-block;"></a>';
+
+    $socialHtml .= '<a href="' . e($s['url']) . '">
+      <img src="cid:' . e($s['cid']) . '" width="28" style="margin:0 6px; display:inline-block;">
+    </a>';
   }
 
   $newsBlocks = '';
+
   foreach ($items as $it) {
-    $line = trim(
-      (format_ptbr_upper($it['news_date'] ?? null) ?: '') . ' - ' . upper_ptbr($it['portal'] ?? '')
-    );
+    $category = trim($it['category_name'] ?? '');
+    $categoryHtml = '';
+
+    if ($category !== '') {
+      $categoryHtml = '
+        <tr>
+          <td style="padding:20px 20px 0 20px;">
+            <span style="font-size:13px; font-weight:bold; color:#1f2937;">
+              ' . e(upper_ptbr($category)) . '
+            </span>
+          </td>
+        </tr>
+      ';
+    }
+
+    $lineParts = array_filter([
+      format_ptbr_upper($it['news_date'] ?? null),
+      upper_ptbr($it['portal'] ?? '')
+    ]);
+
+    $line = implode(' - ', $lineParts);
 
     $newsUrl = $it['link_url'] ? e($it['link_url']) : '#';
     $pdfUrl  = $it['pdf_path'] ? e(url_join(APP_URL, $it['pdf_path'])) : null;
@@ -247,6 +290,8 @@ function render_email_send(int $newsletterId): array {
     }
 
     $newsBlocks .= '
+      ' . $categoryHtml . '
+
       <tr>
         <td style="padding:24px 20px 10px 20px;">
           <span style="font-size:12px; color:#777777;">' . e($line) . '</span>
@@ -330,7 +375,7 @@ function render_email_send(int $newsletterId): array {
                   <td align="left" valign="middle">
                     <img src="cid:engaja_logo" alt="Engaja" width="120" style="display:block;">
                   </td>
-                  <td align="right" valign="middle" style="font-family:Arial, Helvetica, sans-serif;">
+                  <td align="right" valign="middle">
                     <a href="' . e(ENGAJA_SITE_URL) . '" style="font-size:14px; color:#000000; text-decoration:none; font-weight:bold;">
                       www.engajacomunicacao.com.br
                     </a>
