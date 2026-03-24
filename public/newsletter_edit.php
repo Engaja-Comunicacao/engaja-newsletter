@@ -226,6 +226,12 @@ require_once __DIR__ . '/_header.php';
     
     <div id="generalNewsItems"></div>
 
+    <div style="text-align:right; margin-top:10px;">
+      <button type="button" class="secondary" onclick="addNewsItem()">
+        + Adicionar notícia geral
+      </button>
+    </div>
+
     <button class="btn" style="margin-top:24px;">Salvar e voltar ao preview</button>
     <a class="btn secondary" style="margin-top:24px;" href="newsletter_preview.php?id=<?= $id ?>">Cancelar</a>
   </form>

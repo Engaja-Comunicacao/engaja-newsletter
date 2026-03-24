@@ -157,8 +157,14 @@ function addNewsItem(item = null, catRef = '') {
     <input type="hidden" name="item_category_ref[]" value="${actualCatRef}">
 
     <div style="display:flex; gap:10px; margin-bottom:10px;">
-      <input name="item_portal[]" placeholder="Portal" value="${escapeHtml(portal)}" style="flex:1;">
-      <input type="date" name="item_date[]" value="${escapeHtml(newsDate)}">
+      <input name="item_portal[]" placeholder="Portal"
+        value="${escapeHtml(portal)}"
+        style="flex:2; min-width:200px;">
+
+      <input type="date"
+        name="item_date[]"
+        value="${escapeHtml(newsDate)}"
+        style="flex:1; min-width:140px;">
     </div>
     
     <input name="item_title[]" placeholder="Título" value="${escapeHtml(title)}" required style="width:100%; margin-bottom:10px;">
