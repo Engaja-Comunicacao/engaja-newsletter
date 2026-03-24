@@ -167,7 +167,7 @@ function addNewsItem(item = null, catRef = '') {
         style="flex:1; min-width:140px;">
     </div>
     
-    <input name="item_title[]" placeholder="Título" value="${escapeHtml(title)}" required style="width:100%; margin-bottom:10px;">
+    <input name="item_title[]" placeholder="Título" value="${escapeHtml(title)}" style="width:100%; margin-bottom:10px;">
     <textarea name="item_desc[]" placeholder="Descrição" style="width:100%; margin-bottom:10px;">${escapeHtml(desc)}</textarea>
     <input name="item_link[]" placeholder="Link" value="${escapeHtml(link)}" style="width:100%; margin-bottom:10px;">
 
