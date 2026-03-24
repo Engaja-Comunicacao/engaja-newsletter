@@ -165,6 +165,5 @@ require_once __DIR__ . '/_header.php';
 </main>
 
 <script src="assets/script.js"></script>
-<script>addNewsItem();</script>
 
 <?php require_once __DIR__ . '/_footer.php'; ?>
