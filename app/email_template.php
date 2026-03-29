@@ -4,6 +4,16 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/config.php';
 
+function safe_public_fs_path(string $path): ?string {
+  $full = public_fs_path($path);
+
+  if (!$full || !file_exists($full)) {
+    return null;
+  }
+
+  return $full;
+}
+
 function get_newsletter_data(int $newsletterId): array {
   $pdo = db();
 
@@ -219,14 +229,31 @@ function render_email_send(int $newsletterId): array {
   $embeds = [];
 
   $headerPublic = $n['header_image_path'] ?: '/assets/engaja.png';
-  $embeds['header_img'] = public_fs_path($headerPublic);
 
-  $embeds['engaja_logo'] = public_fs_path('/assets/engaja.png');
+  $headerFs = safe_public_fs_path($headerPublic);
 
-  $rede1Fs = public_fs_path('/assets/rede1.png');
-  $rede2Fs = public_fs_path('/assets/rede2.png');
-  $rede3Fs = public_fs_path('/assets/rede3.png');
-  $rede4Fs = public_fs_path('/assets/rede4.png');
+  if (!$headerFs) {
+    $headerFs = safe_public_fs_path('/assets/engaja.png');
+  }
+
+  if (!$headerFs) {
+    throw new RuntimeException("Header não encontrado no servidor.");
+  }
+
+  $embeds['header_img'] = $headerFs;
+
+  $logoFs = safe_public_fs_path('/assets/engaja.png');
+
+  if (!$logoFs) {
+    throw new RuntimeException("Logo Engaja não encontrado.");
+  }
+
+  $embeds['engaja_logo'] = $logoFs;
+
+  $rede1Fs = safe_public_fs_path('/assets/rede1.png');
+  $rede2Fs = safe_public_fs_path('/assets/rede2.png');
+  $rede3Fs = safe_public_fs_path('/assets/rede3.png');
+  $rede4Fs = safe_public_fs_path('/assets/rede4.png');
 
   $socials = [
     ['url' => trim((string)($n['social_1_url'] ?? '')), 'cid' => 'rede1', 'fs' => $rede1Fs],
