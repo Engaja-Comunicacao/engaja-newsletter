@@ -4,7 +4,8 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/config.php';
 
-function safe_public_fs_path(string $path): ?string {
+function safe_public_fs_path(string $path): ?string
+{
   $full = public_fs_path($path);
 
   if (!$full || !file_exists($full)) {
@@ -14,10 +15,11 @@ function safe_public_fs_path(string $path): ?string {
   return $full;
 }
 
-function get_newsletter_data(int $newsletterId): array {
+function get_newsletter_data(int $newsletterId): array
+{
   $pdo = db();
 
-  $st = $pdo->prepare("
+  $st = $pdo->prepare('
     SELECT n.*, c.name AS company_name, c.header_image_path,
            c.social_1_url, c.social_2_url, c.social_3_url, c.social_4_url,
            c.smtp_enabled, c.smtp_host, c.smtp_port, c.smtp_user, c.smtp_pass_enc, c.smtp_secure,
@@ -26,29 +28,31 @@ function get_newsletter_data(int $newsletterId): array {
     JOIN companies c ON c.id = n.company_id
     WHERE n.id = ?
     LIMIT 1
-  ");
+  ');
   $st->execute([$newsletterId]);
   $n = $st->fetch();
-  if (!$n) throw new RuntimeException('Newsletter não encontrada.');
+  if (!$n)
+    throw new RuntimeException('Newsletter não encontrada.');
 
-  $st = $pdo->prepare("
+  $st = $pdo->prepare('
     SELECT i.*, c.name AS category_name
     FROM newsletter_items i
     LEFT JOIN newsletter_categories c ON c.id = i.category_id
     WHERE i.newsletter_id = ?
     ORDER BY i.sort_order ASC, i.id ASC
-  ");
+  ');
   $st->execute([$newsletterId]);
   $items = $st->fetchAll();
 
-  $st = $pdo->prepare("SELECT email FROM company_recipients WHERE company_id=? ORDER BY id ASC");
-  $st->execute([(int)$n['company_id']]);
+  $st = $pdo->prepare('SELECT email FROM company_recipients WHERE company_id=? ORDER BY id ASC');
+  $st->execute([(int) $n['company_id']]);
   $recipients = array_map(fn($r) => $r['email'], $st->fetchAll());
 
   return [$n, $items, $recipients];
 }
 
-function render_news_block_preview(array $item): string {
+function render_news_block_preview(array $item): string
+{
   $category = trim($item['category_name'] ?? '');
   $categoryHtml = '';
 
@@ -63,7 +67,7 @@ function render_news_block_preview(array $item): string {
       </tr>
     ';
   }
-  
+
   $date = format_ptbr_upper($item['news_date'] ?? null);
   $portal = upper_ptbr($item['portal'] ?? '');
 
@@ -71,10 +75,10 @@ function render_news_block_preview(array $item): string {
   $line = implode(' - ', $lineParts);
 
   $newsUrl = $item['link_url'] ? e($item['link_url']) : '#';
-  $pdfUrl  = $item['pdf_path'] ? e(url_join(APP_URL, $item['pdf_path'])) : null;
+  $pdfUrl = $item['pdf_path'] ? e(url_join(APP_URL, $item['pdf_path'])) : null;
 
   $title = e($item['title'] ?? '');
-  $desc  = e($item['description'] ?? '');
+  $desc = e($item['description'] ?? '');
 
   $btnPdf = '';
   if ($pdfUrl) {
@@ -124,7 +128,8 @@ function render_news_block_preview(array $item): string {
   ';
 }
 
-function render_email_preview_html(int $newsletterId): string {
+function render_email_preview_html(int $newsletterId): string
+{
   [$n, $items] = get_newsletter_data($newsletterId);
 
   $headerImg = $n['header_image_path']
@@ -138,20 +143,36 @@ function render_email_preview_html(int $newsletterId): string {
   $rede4Url = url_join(APP_URL, '/assets/rede4.png');
 
   $socials = [
-    ['url' => trim((string)($n['social_1_url'] ?? '')), 'icon' => $rede1Url],
-    ['url' => trim((string)($n['social_2_url'] ?? '')), 'icon' => $rede2Url],
-    ['url' => trim((string)($n['social_3_url'] ?? '')), 'icon' => $rede3Url],
-    ['url' => trim((string)($n['social_4_url'] ?? '')), 'icon' => $rede4Url],
+    ['url' => trim((string) ($n['social_1_url'] ?? '')), 'icon' => $rede1Url],
+    ['url' => trim((string) ($n['social_2_url'] ?? '')), 'icon' => $rede2Url],
+    ['url' => trim((string) ($n['social_3_url'] ?? '')), 'icon' => $rede3Url],
+    ['url' => trim((string) ($n['social_4_url'] ?? '')), 'icon' => $rede4Url],
   ];
 
   $socialHtml = '';
   foreach ($socials as $s) {
-    if ($s['url'] === '') continue;
+    if ($s['url'] === '')
+      continue;
     $socialHtml .= '<a href="' . e($s['url']) . '"><img src="' . e($s['icon']) . '" width="28" style="margin:0 6px; display:inline-block;"></a>';
   }
 
   $newsBlocks = '';
-  foreach ($items as $it) $newsBlocks .= render_news_block_preview($it);
+  foreach ($items as $it)
+    $newsBlocks .= render_news_block_preview($it);
+
+  $mensagemHtml = '';
+  if (!empty($n['mensagem'])) {
+    $mensagemHtml = '
+      <tr>
+        <td style="padding:24px 20px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:22px; color:#333333;">
+          ' . $n['mensagem'] . '
+        </td>
+      </tr>
+      <tr>
+        <td style="border-top:1px solid #dddddd;"></td>
+      </tr>
+    ';
+  }
 
   return '<!DOCTYPE html>
 <html lang="pt-br">
@@ -179,6 +200,8 @@ function render_email_preview_html(int $newsletterId): string {
           </tr>
 
           ' . $newsBlocks . '
+
+          ' . $mensagemHtml . '
 
           <tr>
             <td bgcolor="#eeeeee" style="padding:0;">
@@ -223,7 +246,8 @@ function render_email_preview_html(int $newsletterId): string {
 /**
  * SEND: retorna payload com HTML + embeds (CID)
  */
-function render_email_send(int $newsletterId): array {
+function render_email_send(int $newsletterId): array
+{
   [$n, $items] = get_newsletter_data($newsletterId);
 
   $embeds = [];
@@ -237,7 +261,7 @@ function render_email_send(int $newsletterId): array {
   }
 
   if (!$headerFs) {
-    throw new RuntimeException("Header não encontrado no servidor.");
+    throw new RuntimeException('Header não encontrado no servidor.');
   }
 
   $embeds['header_img'] = $headerFs;
@@ -245,7 +269,7 @@ function render_email_send(int $newsletterId): array {
   $logoFs = safe_public_fs_path('/assets/engaja.png');
 
   if (!$logoFs) {
-    throw new RuntimeException("Logo Engaja não encontrado.");
+    throw new RuntimeException('Logo Engaja não encontrado.');
   }
 
   $embeds['engaja_logo'] = $logoFs;
@@ -256,22 +280,38 @@ function render_email_send(int $newsletterId): array {
   $rede4Fs = safe_public_fs_path('/assets/rede4.png');
 
   $socials = [
-    ['url' => trim((string)($n['social_1_url'] ?? '')), 'cid' => 'rede1', 'fs' => $rede1Fs],
-    ['url' => trim((string)($n['social_2_url'] ?? '')), 'cid' => 'rede2', 'fs' => $rede2Fs],
-    ['url' => trim((string)($n['social_3_url'] ?? '')), 'cid' => 'rede3', 'fs' => $rede3Fs],
-    ['url' => trim((string)($n['social_4_url'] ?? '')), 'cid' => 'rede4', 'fs' => $rede4Fs],
+    ['url' => trim((string) ($n['social_1_url'] ?? '')), 'cid' => 'rede1', 'fs' => $rede1Fs],
+    ['url' => trim((string) ($n['social_2_url'] ?? '')), 'cid' => 'rede2', 'fs' => $rede2Fs],
+    ['url' => trim((string) ($n['social_3_url'] ?? '')), 'cid' => 'rede3', 'fs' => $rede3Fs],
+    ['url' => trim((string) ($n['social_4_url'] ?? '')), 'cid' => 'rede4', 'fs' => $rede4Fs],
   ];
 
   $socialHtml = '';
   foreach ($socials as $s) {
-    if ($s['url'] === '') continue;
-    if (!$s['fs']) continue;
+    if ($s['url'] === '')
+      continue;
+    if (!$s['fs'])
+      continue;
 
     $embeds[$s['cid']] = $s['fs'];
 
     $socialHtml .= '<a href="' . e($s['url']) . '">
       <img src="cid:' . e($s['cid']) . '" width="28" style="margin:0 6px; display:inline-block;">
     </a>';
+  }
+
+  $mensagemHtml = '';
+  if (!empty($n['mensagem'])) {
+    $mensagemHtml = '
+      <tr>
+        <td style="padding:24px 20px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:22px; color:#333333;">
+          ' . $n['mensagem'] . '
+        </td>
+      </tr>
+      <tr>
+        <td style="border-top:1px solid #dddddd;"></td>
+      </tr>
+    ';
   }
 
   $newsBlocks = '';
@@ -300,10 +340,10 @@ function render_email_send(int $newsletterId): array {
     $line = implode(' - ', $lineParts);
 
     $newsUrl = $it['link_url'] ? e($it['link_url']) : '#';
-    $pdfUrl  = $it['pdf_path'] ? e(url_join(APP_URL, $it['pdf_path'])) : null;
+    $pdfUrl = $it['pdf_path'] ? e(url_join(APP_URL, $it['pdf_path'])) : null;
 
     $title = e($it['title'] ?? '');
-    $desc  = e($it['description'] ?? '');
+    $desc = e($it['description'] ?? '');
 
     $btnPdf = '';
     if ($pdfUrl) {
@@ -380,6 +420,8 @@ function render_email_send(int $newsletterId): array {
           </tr>
 
           ' . $newsBlocks . '
+
+          ' . $mensagemHtml . '
 
           <tr>
             <td bgcolor="#eeeeee" style="padding:0;">

@@ -8,7 +8,7 @@ if (!$id) redirect('newsletters.php');
 
 $st = db()->prepare("
   SELECT
-    n.status, n.error_message, n.send_at, n.sent_at,
+    n.status, n.error_message, n.send_at, n.sent_at, n.mensagem,
     u_send.name AS sent_by_name,
     u_create.name AS created_by_name
   FROM newsletters n

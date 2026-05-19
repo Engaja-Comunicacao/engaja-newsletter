@@ -15,7 +15,7 @@ if (!$id) redirect('newsletters.php');
 $error = '';
 
 // carrega newsletter + status
-$st = $pdo->prepare("SELECT id, company_id, send_at, status FROM newsletters WHERE id=? LIMIT 1");
+$st = $pdo->prepare("SELECT id, company_id, send_at, mensagem, status FROM newsletters WHERE id=? LIMIT 1");
 $st->execute([$id]);
 $n = $st->fetch();
 if (!$n) redirect('newsletters.php');
@@ -50,9 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $pdo->beginTransaction();
 
+    $mensagem = trim($_POST['mensagem'] ?? '') ?: null;
+
     // Atualiza newsletter
-    $pdo->prepare("UPDATE newsletters SET company_id=?, send_at=?, error_message=NULL WHERE id=?")
-        ->execute([$companyId, $sendAtDb, $id]);
+    $pdo->prepare("UPDATE newsletters SET company_id=?, send_at=?, mensagem=?, error_message=NULL WHERE id=?")
+        ->execute([$companyId, $sendAtDb, $mensagem, $id]);
 
     // ===================================
     // 1. Processa Categorias
@@ -176,6 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 require_once __DIR__ . '/_header.php';
 ?>
+<link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
 <main class="container card">
   <h2>Editar Newsletter #<?= $id ?></h2>
 
@@ -232,16 +235,41 @@ require_once __DIR__ . '/_header.php';
       </button>
     </div>
 
+    <label><small class="muted">Mensagem</small></label>
+    <div id="mensagem-editor" style="min-height:160px;"></div>
+    <textarea name="mensagem" id="mensagem-hidden" style="display:none;"></textarea>
+
     <button class="btn" style="margin-top:24px;">Salvar e voltar ao preview</button>
     <a class="btn secondary" style="margin-top:24px;" href="newsletter_preview.php?id=<?= $id ?>">Cancelar</a>
   </form>
 </main>
 
 <script src="assets/script.js"></script>
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
   window.__existingCats = <?= json_encode($categories, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
   window.__existingItems = <?= json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
   renderEdit(window.__existingCats, window.__existingItems);
+
+  var quill = new Quill('#mensagem-editor', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['clean']
+      ]
+    }
+  });
+
+  var mensagemExistente = <?= json_encode($n['mensagem'] ?? '', JSON_UNESCAPED_UNICODE) ?>;
+  if (mensagemExistente) {
+    quill.root.innerHTML = mensagemExistente;
+  }
+
+  document.querySelector('form').addEventListener('formdata', function(e) {
+    e.formData.set('mensagem', quill.root.innerHTML);
+  });
 </script>
 
 <?php require_once __DIR__ . '/_footer.php'; ?>

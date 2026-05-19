@@ -70,6 +70,8 @@ CREATE TABLE newsletters (
   send_at DATETIME NULL,
   sent_at DATETIME NULL,
 
+  mensagem TEXT NULL,
+
   status ENUM('draft','scheduled','sending','sent','failed') NOT NULL DEFAULT 'draft',
   error_message TEXT NULL,
 

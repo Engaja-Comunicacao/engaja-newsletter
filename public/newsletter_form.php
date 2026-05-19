@@ -25,8 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdo->beginTransaction();
 
     // 1. Cria a Newsletter
-    $pdo->prepare("INSERT INTO newsletters (company_id, send_at, status, created_by_user_id) VALUES (?,?, 'draft', ?)")
-        ->execute([$companyId, $sendAtDb, $userId]);
+    $mensagem = trim($_POST['mensagem'] ?? '') ?: null;
+
+    $pdo->prepare("INSERT INTO newsletters (company_id, send_at, mensagem, status, created_by_user_id) VALUES (?,?,?, 'draft', ?)")
+        ->execute([$companyId, $sendAtDb, $mensagem, $userId]);
     $newsletterId = (int)$pdo->lastInsertId();
 
     // 2. Processa Categorias
@@ -107,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 require_once __DIR__ . '/_header.php';
 ?>
+<link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
 <main class="container card">
   <h2>Cadastro de Newsletter</h2>
 
@@ -159,11 +162,35 @@ require_once __DIR__ . '/_header.php';
         + Adicionar notícia geral
       </button>
     </div>
+    <div>
+
+    </div>
+
+    <label><small class="muted">Mensagem</small></label>
+    <div id="mensagem-editor" style="min-height:160px;"></div>
+    <textarea name="mensagem" id="mensagem-hidden" style="display:none;"></textarea>
 
     <button class="btn" style="margin-top:24px;">Ir para preview</button>
   </form>
 </main>
 
 <script src="assets/script.js"></script>
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script>
+  var quill = new Quill('#mensagem-editor', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['clean']
+      ]
+    }
+  });
+
+  document.querySelector('form').addEventListener('formdata', function(e) {
+    e.formData.set('mensagem', quill.root.innerHTML);
+  });
+</script>
 
 <?php require_once __DIR__ . '/_footer.php'; ?>

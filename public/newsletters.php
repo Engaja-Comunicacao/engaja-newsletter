@@ -61,13 +61,14 @@ $rows = db()->query("
         <td><?= e($userName ?: '—') ?></td>
         <td style="white-space:nowrap; display:flex; gap:8px; align-items:center;">
           <a class="btn secondary" href="newsletter_preview.php?id=<?= (int)$r['id'] ?>">Preview</a>
-
+          
           <?php if (in_array($r['status'], ['draft','failed'], true)): ?>
             <a class="btn secondary" href="newsletter_edit.php?id=<?= (int)$r['id'] ?>">Editar</a>
-          <?php endif; ?>
-
-          <a class="btn" href="newsletter_action.php?action=delete&id=<?= (int)$r['id'] ?>"
+            <?php endif; ?>
+            
+            <a class="btn" href="newsletter_action.php?action=delete&id=<?= (int)$r['id'] ?>"
             onclick="return confirm('Excluir newsletter?')">Excluir</a>
+            <a class="btn secondary" href="newsletter_pdf.php?id=<?= (int)$r['id'] ?>" target="_blank">Exportar PDF</a>
         </td>
       </tr>
     <?php endforeach; ?>
