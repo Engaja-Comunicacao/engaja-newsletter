@@ -179,6 +179,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 require_once __DIR__ . '/_header.php';
 ?>
 <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
+<style>
+  .ql-editor a { color: #2563eb; text-decoration: underline; }
+</style>
 <main class="container card">
   <h2>Editar Newsletter #<?= $id ?></h2>
 
@@ -214,7 +217,13 @@ require_once __DIR__ . '/_header.php';
       </div>
     </div>
     
-    <div id="newsItems"></div> 
+    <div id="newsItems"></div>
+
+    <div style="text-align:right; margin-top:10px;">
+      <button type="button" class="secondary" onclick="addCategory()">
+        + Criar categoria
+      </button>
+    </div>
 
     <hr style="margin-top: 24px; border-top: 2px dashed #ddd;">
 
@@ -257,6 +266,7 @@ require_once __DIR__ . '/_header.php';
       toolbar: [
         ['bold', 'italic', 'underline', 'strike'],
         [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link'],
         ['clean']
       ]
     }
@@ -266,6 +276,13 @@ require_once __DIR__ . '/_header.php';
   if (mensagemExistente) {
     quill.root.innerHTML = mensagemExistente;
   }
+
+  quill.on('text-change', function() {
+    quill.root.querySelectorAll('a').forEach(function(a) {
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+    });
+  });
 
   document.querySelector('form').addEventListener('formdata', function(e) {
     e.formData.set('mensagem', quill.root.innerHTML);

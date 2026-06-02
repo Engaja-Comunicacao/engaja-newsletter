@@ -16,6 +16,56 @@ if (!$id) redirect('newsletters.php');
 
 $pdo = db();
 
+if ($action === 'duplicate') {
+  try {
+    $pdo->beginTransaction();
+
+    // 1. Busca newsletter original
+    $st = $pdo->prepare("SELECT company_id, mensagem FROM newsletters WHERE id=? LIMIT 1");
+    $st->execute([$id]);
+    $original = $st->fetch();
+    if (!$original) throw new RuntimeException('Newsletter não encontrada.');
+
+    // 2. Cria cópia (draft, sem data de envio)
+    $pdo->prepare("INSERT INTO newsletters (company_id, send_at, mensagem, status, created_by_user_id) VALUES (?, NULL, ?, 'draft', ?)")
+        ->execute([$original['company_id'], $original['mensagem'], $userId]);
+    $newId = (int)$pdo->lastInsertId();
+
+    // 3. Copia categorias e monta mapa id_antigo => id_novo
+    $cats = $pdo->prepare("SELECT id, name, sort_order FROM newsletter_categories WHERE newsletter_id=? ORDER BY sort_order ASC, id ASC");
+    $cats->execute([$id]);
+
+    $catMap = [];
+    $insCat = $pdo->prepare("INSERT INTO newsletter_categories (newsletter_id, name, sort_order) VALUES (?,?,?)");
+    foreach ($cats->fetchAll() as $cat) {
+      $insCat->execute([$newId, $cat['name'], $cat['sort_order']]);
+      $catMap[(int)$cat['id']] = (int)$pdo->lastInsertId();
+    }
+
+    // 4. Copia itens remapeando category_id
+    $items = $pdo->prepare("SELECT category_id, portal, news_date, title, description, link_url, pdf_path, sort_order FROM newsletter_items WHERE newsletter_id=? ORDER BY sort_order ASC, id ASC");
+    $items->execute([$id]);
+
+    $insItem = $pdo->prepare("INSERT INTO newsletter_items (newsletter_id, category_id, portal, news_date, title, description, link_url, pdf_path, sort_order) VALUES (?,?,?,?,?,?,?,?,?)");
+    foreach ($items->fetchAll() as $item) {
+      $newCatId = $item['category_id'] ? ($catMap[(int)$item['category_id']] ?? null) : null;
+      $insItem->execute([
+        $newId, $newCatId, $item['portal'], $item['news_date'],
+        $item['title'], $item['description'], $item['link_url'],
+        $item['pdf_path'], $item['sort_order']
+      ]);
+    }
+
+    $pdo->commit();
+    redirect('newsletter_edit.php?id=' . $newId);
+
+  } catch (Throwable $t) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
+    $_SESSION['flash_error'] = 'Falha ao duplicar: ' . $t->getMessage();
+    redirect('newsletters.php');
+  }
+}
+
 if ($action === 'delete') {
   $pdo->prepare("DELETE FROM newsletters WHERE id=?")->execute([$id]);
   $_SESSION['flash_success'] = 'Newsletter excluída.';
