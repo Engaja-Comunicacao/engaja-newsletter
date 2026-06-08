@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    expose:
+      - "80"
     environment:
       APP_URL: "https://newsletter.engajacomunicacao.com.br"
       APP_CRYPT_KEY: ""
