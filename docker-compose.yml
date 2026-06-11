@@ -5,6 +5,9 @@ services:
       dockerfile: Dockerfile
     expose:
       - "80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.web.loadbalancer.server.port=80"
     environment:
       APP_URL: "https://newsletter.engajacomunicacao.com.br"
       APP_CRYPT_KEY: ""
