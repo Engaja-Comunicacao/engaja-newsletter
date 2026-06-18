@@ -1,8 +1,6 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: gleidsonrocha/engaja-app:latest
     expose:
       - "80"
     labels:
@@ -31,9 +29,7 @@ services:
     restart: unless-stopped
 
   scheduler:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: gleidsonrocha/engaja-app:latest
     environment:
       DB_HOST: db
       DB_PORT: 3306

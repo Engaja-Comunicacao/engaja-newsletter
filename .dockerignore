@@ -1,0 +1,27 @@
+# Controle de versão
+.git
+.gitignore
+
+# Variáveis de ambiente (nunca entrar na imagem)
+.env
+.env.*
+
+# Dependências locais (serão instaladas pelo composer dentro do build)
+vendor/
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+
+# Uploads e storage gerados em runtime
+public/uploads/
+storage/
+
+# Arquivos do editor e SO
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# Logs locais
+*.log
