@@ -113,74 +113,76 @@ require_once __DIR__ . '/_header.php';
 <style>
   .ql-editor a { color: #2563eb; text-decoration: underline; }
 </style>
-<main class="container card">
-  <h2>Cadastro de Newsletter</h2>
+<main class="container px-20 py-10">
+  <h2 class="text-5xl text-cinza font-extrabold">Cadastro de Newsletter</h2>
 
-  <?php if ($error): ?>
-    <p style="color:#ef4444; font-weight:600;"><?= e($error) ?></p>
-  <?php endif; ?>
-
-  <form method="POST" enctype="multipart/form-data">
-    <?= csrf_field(); ?>
-
-    <label><small class="muted">Empresa</small></label>
-    <select name="company_id" required>
-      <option value="">Selecione...</option>
-      <?php foreach ($companies as $c): ?>
-        <option value="<?= (int)$c['id'] ?>"><?= e($c['name']) ?></option>
-      <?php endforeach; ?>
-    </select>
-
-    <label><small class="muted">Data e hora do envio (opcional, para agendar)</small></label>
-    <input type="datetime-local" name="send_at">
-
-    <hr>
-
-    <div class="row" style="align-items:center;">
-      <div><h3 style="margin:0;">Categorias (Opcional)</h3></div>
-      <div style="text-align:right;">
-        <button type="button" class="secondary" onclick="addCategory()">
-          + Criar categoria
+  <div class="bg-white p-4 rounded-lg mt-6 shadow-lg">
+    <?php if ($error): ?>
+      <p style="color:#ef4444; font-weight:600;"><?= e($error) ?></p>
+    <?php endif; ?>
+  
+    <form method="POST" enctype="multipart/form-data">
+      <?= csrf_field(); ?>
+  
+      <label><small class="muted">Empresa</small></label>
+      <select name="company_id" required>
+        <option value="">Selecione...</option>
+        <?php foreach ($companies as $c): ?>
+          <option value="<?= (int)$c['id'] ?>"><?= e($c['name']) ?></option>
+        <?php endforeach; ?>
+      </select>
+  
+      <label><small class="muted">Data e hora do envio (opcional, para agendar)</small></label>
+      <input type="datetime-local" name="send_at">
+  
+      <hr>
+  
+      <div class="row" style="align-items:center;">
+        <div><h3 style="margin:0;">Categorias (Opcional)</h3></div>
+        <div style="text-align:right;">
+          <button type="button" class="rounded-lg leading-10 px-8 font-bold bg-cinza text-white text-sm duration-150 hover:bg-yellow-500 hover:text-cinza" onclick="addCategory()">
+            Criar categoria
+          </button>
+        </div>
+      </div>
+      
+      <div id="newsItems"></div>
+  
+      <div style="text-align:right; margin-top:10px;">
+        <button type="button" class="rounded-lg leading-10 px-8 font-bold bg-cinza text-white text-sm duration-150 hover:bg-yellow-500 hover:text-cinza" onclick="addCategory()">
+          Criar categoria
         </button>
       </div>
-    </div>
-    
-    <div id="newsItems"></div>
-
-    <div style="text-align:right; margin-top:10px;">
-      <button type="button" class="secondary" onclick="addCategory()">
-        + Criar categoria
-      </button>
-    </div>
-
-    <hr style="margin-top: 24px; border-top: 2px dashed #ddd;">
-
-    <div class="row" style="align-items:center;">
-      <div><h3 style="margin:0;">Notícias Gerais (Sem Categoria)</h3></div>
-      <div style="text-align:right;">
-        <button type="button" class="secondary" onclick="addNewsItem()">
-          + Adicionar notícia geral
+  
+      <hr style="margin-top: 24px; border-top: 2px dashed #ddd;">
+  
+      <div class="row" style="align-items:center;">
+        <div><h3 style="margin:0;">Notícias Gerais (Sem Categoria)</h3></div>
+        <div style="text-align:right;">
+          <button type="button" class="rounded-lg leading-10 px-8 font-bold bg-cinza text-white text-sm duration-150 hover:bg-yellow-500 hover:text-cinza" onclick="addNewsItem()">
+            Adicionar notícia geral
+          </button>
+        </div>
+      </div>
+      
+      <div id="generalNewsItems"></div>
+  
+      <div style="text-align:right; margin-top:10px;">
+        <button type="button" class="rounded-lg leading-10 px-8 font-bold bg-cinza text-white text-sm duration-150 hover:bg-yellow-500 hover:text-cinza" onclick="addNewsItem()">
+          Adicionar notícia geral
         </button>
       </div>
-    </div>
-    
-    <div id="generalNewsItems"></div>
-
-    <div style="text-align:right; margin-top:10px;">
-      <button type="button" class="secondary" onclick="addNewsItem()">
-        + Adicionar notícia geral
-      </button>
-    </div>
-    <div>
-
-    </div>
-
-    <label><small class="muted">Mensagem</small></label>
-    <div id="mensagem-editor" style="min-height:160px;"></div>
-    <textarea name="mensagem" id="mensagem-hidden" style="display:none;"></textarea>
-
-    <button class="btn" style="margin-top:24px;">Ir para preview</button>
-  </form>
+      <div>
+  
+      </div>
+  
+      <label><small class="muted">Mensagem</small></label>
+      <div id="mensagem-editor" style="min-height:160px;"></div>
+      <textarea name="mensagem" id="mensagem-hidden" style="display:none;"></textarea>
+  
+      <button class="btn rounded-lg leading-10 px-8 font-bold bg-cinza text-white text-sm duration-150 hover:bg-yellow-500 hover:text-cinza" style="margin-top:24px;">Ir para preview</button>
+    </form>
+  </div>
 </main>
 
 <script src="assets/script.js"></script>

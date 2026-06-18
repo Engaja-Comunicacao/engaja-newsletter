@@ -170,124 +170,126 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 require_once __DIR__ . '/_header.php';
 ?>
-<main class="container card">
-  <h2><?= $id ? 'Editar Empresa' : 'Cadastro de Empresa' ?></h2>
+<main class="container px-20 py-10">
+  <h2 class="text-5xl text-cinza font-extrabold"><?= $id ? 'Editar Empresa' : 'Cadastro de Empresa' ?></h2>
 
-  <?php if ($error): ?>
-    <p style="color:#ef4444; font-weight:600;"><?= e($error) ?></p>
-  <?php endif; ?>
-
-  <form method="POST" enctype="multipart/form-data">
-    <?= csrf_field(); ?>
-
-    <label><small class="muted">Nome da Empresa</small></label>
-    <input name="name" value="<?= e($company['name'] ?? '') ?>" placeholder="Nome da Empresa" required>
-
-    <label>
-      <small class="muted">
-        Imagem topo do email (PNG/JPG/WEBP) — <strong>600x300px</strong>
-      </small>
-    </label>
-    <input type="file" name="header_image" accept="image/png,image/jpeg,image/webp">
-    <?php if (!empty($company['header_image_path'])): ?>
-      <p><small class="muted">Atual: <?= e($company['header_image_path']) ?></small></p>
+  <div class="bg-white p-4 rounded-lg mt-6 shadow-lg">
+    <?php if ($error): ?>
+      <p style="color:#ef4444; font-weight:600;"><?= e($error) ?></p>
     <?php endif; ?>
-
-    <hr>
-    <h3 style="margin:0 0 12px 0;">Redes</h3>
-
-    <div class="row">
-      <div>
-        <label><small class="muted">Instagram</small></label>
-        <input name="social_1_url" value="<?= e($company['social_1_url'] ?? '') ?>" placeholder="https://instagram.com/...">
+  
+    <form method="POST" enctype="multipart/form-data">
+      <?= csrf_field(); ?>
+  
+      <label><small class="muted">Nome da Empresa</small></label>
+      <input name="name" value="<?= e($company['name'] ?? '') ?>" placeholder="Nome da Empresa" required>
+  
+      <label>
+        <small class="muted">
+          Imagem topo do email (PNG/JPG/WEBP) — <strong>600x300px</strong>
+        </small>
+      </label>
+      <input type="file" name="header_image" accept="image/png,image/jpeg,image/webp">
+      <?php if (!empty($company['header_image_path'])): ?>
+        <p><small class="muted">Atual: <?= e($company['header_image_path']) ?></small></p>
+      <?php endif; ?>
+  
+      <hr>
+      <h3 style="margin:0 0 12px 0;">Redes</h3>
+  
+      <div class="row">
+        <div>
+          <label><small class="muted">Instagram</small></label>
+          <input name="social_1_url" value="<?= e($company['social_1_url'] ?? '') ?>" placeholder="https://instagram.com/...">
+        </div>
+        <div>
+          <label><small class="muted">Facebook</small></label>
+          <input name="social_2_url" value="<?= e($company['social_2_url'] ?? '') ?>" placeholder="https://facebook.com/...">
+        </div>
       </div>
-      <div>
-        <label><small class="muted">Facebook</small></label>
-        <input name="social_2_url" value="<?= e($company['social_2_url'] ?? '') ?>" placeholder="https://facebook.com/...">
+  
+      <div class="row">
+        <div>
+          <label><small class="muted">Linkedin</small></label>
+          <input name="social_3_url" value="<?= e($company['social_3_url'] ?? '') ?>" placeholder="https://linkedin.com/company/...">
+        </div>
+        <div>
+          <label><small class="muted">Site</small></label>
+          <input name="social_4_url" value="<?= e($company['social_4_url'] ?? '') ?>" placeholder="https://...">
+        </div>
       </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label><small class="muted">Linkedin</small></label>
-        <input name="social_3_url" value="<?= e($company['social_3_url'] ?? '') ?>" placeholder="https://linkedin.com/company/...">
+  
+      <hr>
+      <h3 style="margin:0 0 12px 0;">Envio por email do cliente (SMTP)</h3>
+  
+      <label style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" name="smtp_enabled" value="1" <?= !empty($company['smtp_enabled']) ? 'checked' : '' ?>>
+        <small class="muted">Habilitar envio pelo SMTP desta empresa</small>
+      </label>
+  
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label><small class="muted">SMTP Host</small></label>
+          <input name="smtp_host" value="<?= e($company['smtp_host'] ?? '') ?>" placeholder="smtp.gmail.com">
+        </div>
+        <div>
+          <label><small class="muted">SMTP Port</small></label>
+          <input name="smtp_port" value="<?= e((string)($company['smtp_port'] ?? '587')) ?>" placeholder="587">
+        </div>
       </div>
-      <div>
-        <label><small class="muted">Site</small></label>
-        <input name="social_4_url" value="<?= e($company['social_4_url'] ?? '') ?>" placeholder="https://...">
+  
+      <div class="row">
+        <div>
+          <label><small class="muted">SMTP Usuário (email)</small></label>
+          <input name="smtp_user" value="<?= e($company['smtp_user'] ?? '') ?>" placeholder="ex: newsletter@cliente.com.br">
+        </div>
+        <div>
+          <label><small class="muted">Segurança</small></label>
+          <select name="smtp_secure">
+            <option value="tls" <?= (($company['smtp_secure'] ?? 'tls') === 'tls') ? 'selected' : '' ?>>TLS (STARTTLS)</option>
+            <option value="ssl" <?= (($company['smtp_secure'] ?? '') === 'ssl') ? 'selected' : '' ?>>SSL</option>
+            <option value="none" <?= (($company['smtp_secure'] ?? '') === 'none') ? 'selected' : '' ?>>Nenhuma</option>
+          </select>
+        </div>
       </div>
-    </div>
-
-    <hr>
-    <h3 style="margin:0 0 12px 0;">Envio por email do cliente (SMTP)</h3>
-
-    <label style="display:flex; align-items:center; gap:10px;">
-      <input type="checkbox" name="smtp_enabled" value="1" <?= !empty($company['smtp_enabled']) ? 'checked' : '' ?>>
-      <small class="muted">Habilitar envio pelo SMTP desta empresa</small>
-    </label>
-
-    <div class="row" style="margin-top:10px;">
-      <div>
-        <label><small class="muted">SMTP Host</small></label>
-        <input name="smtp_host" value="<?= e($company['smtp_host'] ?? '') ?>" placeholder="smtp.gmail.com">
+  
+      <label><small class="muted">App Password (somente se quiser cadastrar/trocar)</small></label>
+      <input type="password" name="smtp_pass" placeholder="<?= !empty($company['smtp_pass_enc']) ? 'Deixe vazio para manter' : 'Obrigatório na primeira configuração' ?>">
+  
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label><small class="muted">From Email (opcional)</small></label>
+          <input name="smtp_from_email" value="<?= e($company['smtp_from_email'] ?? '') ?>" placeholder="ex: newsletter@cliente.com.br">
+        </div>
+        <div>
+          <label><small class="muted">From Nome (opcional)</small></label>
+          <input name="smtp_from_name" value="<?= e($company['smtp_from_name'] ?? '') ?>" placeholder="ex: ABIHV">
+        </div>
       </div>
-      <div>
-        <label><small class="muted">SMTP Port</small></label>
-        <input name="smtp_port" value="<?= e((string)($company['smtp_port'] ?? '587')) ?>" placeholder="587">
+  
+      <p><small class="muted">
+        Se habilitar SMTP e preencher credenciais, o envio dessa empresa será autenticado no email do cliente (melhor para “aparecer como eles”).
+        Se desabilitar, continua enviando pelo SMTP padrão da Engaja.
+      </small></p>
+  
+      <hr>
+  
+      <label><small class="muted">Destinatários (clique na tag para remover)</small></label>
+      <input id="emailInput" placeholder="E-mail">
+      <button type="button" class="rounded-lg leading-10 px-8 font-bold bg-cinza text-white text-sm duration-150 hover:bg-yellow-500 hover:text-cinza" onclick="addEmailTag()">Adicionar e-mail</button>
+  
+      <div id="emailsList" class="tags" style="margin-top:8px;">
+        <?php foreach ($recipients as $r): ?>
+          <span title="Clique para remover" style="cursor:pointer;" onclick="this.remove()">
+            <?= e($r['email']) ?>
+            <input type="hidden" name="recipient_emails[]" value="<?= e($r['email']) ?>">
+          </span>
+        <?php endforeach; ?>
       </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label><small class="muted">SMTP Usuário (email)</small></label>
-        <input name="smtp_user" value="<?= e($company['smtp_user'] ?? '') ?>" placeholder="ex: newsletter@cliente.com.br">
-      </div>
-      <div>
-        <label><small class="muted">Segurança</small></label>
-        <select name="smtp_secure">
-          <option value="tls" <?= (($company['smtp_secure'] ?? 'tls') === 'tls') ? 'selected' : '' ?>>TLS (STARTTLS)</option>
-          <option value="ssl" <?= (($company['smtp_secure'] ?? '') === 'ssl') ? 'selected' : '' ?>>SSL</option>
-          <option value="none" <?= (($company['smtp_secure'] ?? '') === 'none') ? 'selected' : '' ?>>Nenhuma</option>
-        </select>
-      </div>
-    </div>
-
-    <label><small class="muted">App Password (somente se quiser cadastrar/trocar)</small></label>
-    <input type="password" name="smtp_pass" placeholder="<?= !empty($company['smtp_pass_enc']) ? 'Deixe vazio para manter' : 'Obrigatório na primeira configuração' ?>">
-
-    <div class="row" style="margin-top:10px;">
-      <div>
-        <label><small class="muted">From Email (opcional)</small></label>
-        <input name="smtp_from_email" value="<?= e($company['smtp_from_email'] ?? '') ?>" placeholder="ex: newsletter@cliente.com.br">
-      </div>
-      <div>
-        <label><small class="muted">From Nome (opcional)</small></label>
-        <input name="smtp_from_name" value="<?= e($company['smtp_from_name'] ?? '') ?>" placeholder="ex: ABIHV">
-      </div>
-    </div>
-
-    <p><small class="muted">
-      Se habilitar SMTP e preencher credenciais, o envio dessa empresa será autenticado no email do cliente (melhor para “aparecer como eles”).
-      Se desabilitar, continua enviando pelo SMTP padrão da Engaja.
-    </small></p>
-
-    <hr>
-
-    <label><small class="muted">Destinatários (clique na tag para remover)</small></label>
-    <input id="emailInput" placeholder="E-mail">
-    <button type="button" class="secondary" onclick="addEmailTag()">Adicionar e-mail</button>
-
-    <div id="emailsList" class="tags" style="margin-top:8px;">
-      <?php foreach ($recipients as $r): ?>
-        <span title="Clique para remover" style="cursor:pointer;" onclick="this.remove()">
-          <?= e($r['email']) ?>
-          <input type="hidden" name="recipient_emails[]" value="<?= e($r['email']) ?>">
-        </span>
-      <?php endforeach; ?>
-    </div>
-
-    <button class="btn" style="margin-top:16px;">Salvar</button>
-  </form>
+  
+      <button class="btn rounded-lg leading-10 px-8 font-bold bg-cinza text-white text-sm duration-150 hover:bg-yellow-500 hover:text-cinza" style="margin-top:16px;">Salvar</button>
+    </form>
+  </div>
 </main>
 
 <script src="assets/script.js"></script>

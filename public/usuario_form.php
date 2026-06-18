@@ -45,19 +45,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 require_once __DIR__ . '/_header.php';
 ?>
-<main class="container card">
-  <h2><?= $id ? 'Editar Usuário' : 'Cadastro de Usuário' ?></h2>
+<main class="container px-20 py-10">
+  <h2 class="text-5xl text-cinza font-extrabold"><?= $id ? 'Editar Usuário' : 'Cadastro de Usuário' ?></h2>
 
-  <?php if ($error): ?>
-    <p style="color:#ef4444; font-weight:600;"><?= e($error) ?></p>
-  <?php endif; ?>
-
-  <form method="POST">
-    <?= csrf_field(); ?>
-    <input name="name" value="<?= e($user['name'] ?? '') ?>" placeholder="Nome" required>
-    <input name="email" value="<?= e($user['email'] ?? '') ?>" placeholder="Email" required>
-    <input type="password" name="password" placeholder="<?= $id ? 'Senha (deixe vazio para manter)' : 'Senha' ?>" <?= $id ? '' : 'required' ?>>
-    <button class="btn">Salvar</button>
-  </form>
+  <div class="bg-white p-4 rounded-lg mt-6 shadow-lg">
+    <?php if ($error): ?>
+      <p style="color:#ef4444; font-weight:600;"><?= e($error) ?></p>
+    <?php endif; ?>
+  
+    <form method="POST">
+      <?= csrf_field(); ?>
+      <input name="name" value="<?= e($user['name'] ?? '') ?>" placeholder="Nome" required>
+      <input name="email" value="<?= e($user['email'] ?? '') ?>" placeholder="Email" required>
+      <input type="password" name="password" placeholder="<?= $id ? 'Senha (deixe vazio para manter)' : 'Senha' ?>" <?= $id ? '' : 'required' ?>>
+      <button class="btn rounded-lg leading-10 px-8 font-bold bg-cinza text-white text-sm duration-150 hover:bg-yellow-500 hover:text-cinza">Salvar</button>
+    </form>
+  </div>
 </main>
 <?php require_once __DIR__ . '/_footer.php'; ?>
