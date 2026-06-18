@@ -9,7 +9,7 @@ services:
     environment:
       APP_URL: "https://newsletter.engajacomunicacao.com.br"
       APP_CRYPT_KEY: ""
-      DB_HOST: db
+      DB_HOST: ""
       DB_PORT: 3306
       DB_NAME: ""
       DB_USER: ""
@@ -23,15 +23,12 @@ services:
       MAIL_FROM_NAME: "Engaja Comunicação"
     volumes:
       - engaja_uploads:/var/www/html/public/uploads
-    depends_on:
-      db:
-        condition: service_healthy
     restart: unless-stopped
 
   scheduler:
     image: gleidsonrocha/engaja-app:latest
     environment:
-      DB_HOST: db
+      DB_HOST: ""
       DB_PORT: 3306
       DB_NAME: ""
       DB_USER: ""
@@ -45,9 +42,6 @@ services:
       MAIL_FROM_NAME: "Engaja Comunicação"
     volumes:
       - engaja_uploads:/var/www/html/public/uploads
-    depends_on:
-      db:
-        condition: service_healthy
     restart: unless-stopped
     command: >
       sh -lc "mkdir -p /var/www/html/storage &&
@@ -57,26 +51,5 @@ services:
                 sleep 60;
               done"
 
-  db:
-    build:
-      context: .
-      dockerfile: Dockerfile.mysql
-    environment:
-      MYSQL_DATABASE: ""
-      MYSQL_USER: ""
-      MYSQL_PASSWORD: ""
-      MYSQL_ROOT_PASSWORD: ""
-      TZ: America/Sao_Paulo
-    volumes:
-      - engaja_dbdata:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-      start_period: 20s
-    restart: unless-stopped
-
 volumes:
-  engaja_dbdata:
   engaja_uploads:
