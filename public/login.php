@@ -59,6 +59,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <button class="w-full cursor-pointer rounded-lg leading-10 px-8 font-bold bg-cinza text-white text-sm duration-150 hover:bg-yellow-500 hover:text-cinza">Entrar</button>
     </div>
   </form>
-  <h6 class="text-cinza absolute bottom-4 right-4 text-xs font-bold">v1.44.3</h6>
+  <h6 class="text-cinza absolute bottom-4 right-4 text-xs font-bold">v1.45.0</h6>
 </body>
 </html>
