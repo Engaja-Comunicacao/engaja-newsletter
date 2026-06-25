@@ -6,6 +6,9 @@ function e(string $v): string {
 }
 
 function redirect(string $path): void {
+  if (session_status() === PHP_SESSION_ACTIVE) {
+    session_write_close();
+  }
   header('Location: ' . $path);
   exit;
 }

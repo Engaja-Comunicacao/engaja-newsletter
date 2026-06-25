@@ -54,7 +54,6 @@ RUN { \
   echo "error_log=/var/www/html/storage/php_errors.log"; \
   echo "session.save_path=/var/www/html/storage/sessions"; \
   echo "session.cookie_httponly=1"; \
-  echo "session.use_strict_mode=1"; \
 } > /usr/local/etc/php/conf.d/engaja.ini
 
 EXPOSE 80

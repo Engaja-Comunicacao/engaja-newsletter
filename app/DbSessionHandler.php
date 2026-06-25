@@ -20,8 +20,13 @@ class DbSessionHandler implements SessionHandlerInterface {
       $st = db()->prepare("SELECT data FROM sessions WHERE id = ? AND last_activity > ?");
       $st->execute([$id, time() - $this->lifetime]);
       $row = $st->fetch(PDO::FETCH_ASSOC);
-      return $row ? $row['data'] : '';
+      if (!$row) {
+        error_log("DbSession::read — nenhuma sessão no DB para id=" . substr($id, 0, 8));
+        return '';
+      }
+      return $row['data'];
     } catch (Throwable $e) {
+      error_log("DbSession::read exception: " . $e->getMessage());
       return '';
     }
   }
@@ -32,8 +37,11 @@ class DbSessionHandler implements SessionHandlerInterface {
         INSERT INTO sessions (id, data, last_activity) VALUES (?, ?, ?)
         ON DUPLICATE KEY UPDATE data = VALUES(data), last_activity = VALUES(last_activity)
       ");
-      return $st->execute([$id, $data, time()]);
+      $ok = $st->execute([$id, $data, time()]);
+      if (!$ok) error_log("DbSession::write falhou para id=" . substr($id, 0, 8));
+      return $ok;
     } catch (Throwable $e) {
+      error_log("DbSession::write exception: " . $e->getMessage());
       return false;
     }
   }
