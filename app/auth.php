@@ -2,9 +2,11 @@
 // app/auth.php
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/DbSessionHandler.php';
 
 function start_session(): void {
   if (session_status() === PHP_SESSION_NONE) {
+    session_set_save_handler(new DbSessionHandler(), true);
     session_name(SESSION_NAME);
     session_start();
   }
