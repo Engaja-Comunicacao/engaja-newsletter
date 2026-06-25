@@ -37,6 +37,11 @@ RUN mkdir -p /var/www/html/storage \
  && chown -R www-data:www-data /var/www/html/storage \
  && chmod -R 775 /var/www/html/storage
 
+# Sessões PHP
+RUN mkdir -p /var/www/html/storage/sessions \
+ && chown -R www-data:www-data /var/www/html/storage/sessions \
+ && chmod 770 /var/www/html/storage/sessions
+
 # Limites e logging do PHP (produção)
 RUN { \
   echo "upload_max_filesize=20M"; \
@@ -47,6 +52,9 @@ RUN { \
   echo "display_errors=Off"; \
   echo "log_errors=On"; \
   echo "error_log=/var/www/html/storage/php_errors.log"; \
+  echo "session.save_path=/var/www/html/storage/sessions"; \
+  echo "session.cookie_httponly=1"; \
+  echo "session.use_strict_mode=1"; \
 } > /usr/local/etc/php/conf.d/engaja.ini
 
 EXPOSE 80

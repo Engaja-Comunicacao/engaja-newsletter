@@ -13,12 +13,8 @@ function start_session(): void {
 function current_user(): ?array {
   start_session();
   if (empty($_SESSION['user_id'])) return null;
-
-  $st = db()->prepare("SELECT id,name,email FROM users WHERE id=? LIMIT 1");
-  $st->execute([(int)$_SESSION['user_id']]);
-  $u = $st->fetch();
-
-  return $u ?: null;
+  // Fallback para sessões antigas que não têm 'user' ainda
+  return $_SESSION['user'] ?? ['id' => (int)$_SESSION['user_id']];
 }
 
 function require_login(): void {
@@ -35,10 +31,12 @@ function do_login(string $email, string $password): bool {
 
   start_session();
   $_SESSION['user_id'] = (int)$u['id'];
+  $_SESSION['user']    = ['id' => (int)$u['id'], 'name' => $u['name'], 'email' => $u['email']];
   return true;
 }
 
 function do_logout(): void {
   start_session();
+  $_SESSION = [];
   session_destroy();
 }

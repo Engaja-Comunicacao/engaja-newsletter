@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/_header.php';
-$rows = db()->query("SELECT id,name,email,created_at FROM users ORDER BY id DESC")->fetchAll();
+$rows = db()->query("SELECT id,name,email FROM users ORDER BY id DESC")->fetchAll();
 ?>
 <main class="container px-20 py-10">
   <div class="flex justify-between items-center">
