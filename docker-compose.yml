@@ -1,21 +1,21 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: engaja_web
-    ports:
-      - "80:80"
+    image: gleidsonrocha/engaja-app:latest
+    pull_policy: always
+    expose:
+      - "80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.web.loadbalancer.server.port=80"
     environment:
       APP_URL: "https://newsletter.engajacomunicacao.com.br"
-      APP_CRYPT_KEY: "KlEGVWdZ36cE/9jUi0flVBMW91Oigo55iZx2MFYiNdDWi8maRAENBlaip9L6YHa5"
-      DB_HOST: db
+      APP_CRYPT_KEY: ""
+      DB_HOST: "db"
       DB_PORT: 3306
       DB_NAME: engaja
       DB_USER: engaja
       DB_PASS: engaja123
       TZ: America/Fortaleza
-
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
       MAIL_USER: monitoramento@engajacomunicacao.com.br
@@ -23,19 +23,16 @@ services:
       MAIL_FROM_EMAIL: monitoramento@engajacomunicacao.com.br
       MAIL_FROM_NAME: "Engaja Comunicação"
     volumes:
-      - ./:/var/www/html
-      - /var/www/html/vendor
       - engaja_uploads:/var/www/html/public/uploads
+      - engaja_sessions:/var/www/html/storage/sessions
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
 
   scheduler:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: engaja_scheduler
+    image: gleidsonrocha/engaja-app:latest
+    pull_policy: always
     environment:
       DB_HOST: db
       DB_PORT: 3306
@@ -47,6 +44,7 @@ services:
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
       MAIL_USER: monitoramento@engajacomunicacao.com.br
+      MAIL_PASS: ""
       MAIL_PASS: "prar uzta hizw ewgf"
       MAIL_FROM_EMAIL: monitoramento@engajacomunicacao.com.br
       MAIL_FROM_NAME: "Engaja Comunicação"
@@ -60,9 +58,7 @@ services:
     restart: unless-stopped
     command: >
       sh -lc "mkdir -p /var/www/html/storage &&
-              touch /var/www/html/storage/cron.log &&
-              while true; do
-                php /var/www/html/cron/send_scheduled.php >> /var/www/html/storage/cron.log 2>&1;
+@@ -54,6 +66,29 @@ services:
                 sleep 60;
               done"
 
@@ -92,3 +88,4 @@ services:
 volumes:
   engaja_dbdata:
   engaja_uploads:
+  engaja_sessions:
