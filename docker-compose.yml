@@ -64,7 +64,6 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: engaja_db
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_DATABASE: engaja
