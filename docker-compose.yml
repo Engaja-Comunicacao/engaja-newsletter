@@ -1,50 +1,62 @@
 services:
   web:
-    image: gleidsonrocha/engaja-app:latest
-    pull_policy: always
-    expose:
-      - "80"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.web.loadbalancer.server.port=80"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: engaja_web
+    ports:
+      - "80:80"
     environment:
       APP_URL: "https://newsletter.engajacomunicacao.com.br"
-      APP_CRYPT_KEY: ""
-      DB_HOST: ""
+      APP_CRYPT_KEY: "KlEGVWdZ36cE/9jUi0flVBMW91Oigo55iZx2MFYiNdDWi8maRAENBlaip9L6YHa5"
+      DB_HOST: db
       DB_PORT: 3306
-      DB_NAME: ""
-      DB_USER: ""
-      DB_PASS: ""
+      DB_NAME: engaja
+      DB_USER: engaja
+      DB_PASS: engaja123
       TZ: America/Fortaleza
+
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
       MAIL_USER: monitoramento@engajacomunicacao.com.br
-      MAIL_PASS: ""
+      MAIL_PASS: "prar uzta hizw ewgf"
       MAIL_FROM_EMAIL: monitoramento@engajacomunicacao.com.br
       MAIL_FROM_NAME: "Engaja Comunicação"
     volumes:
+      - ./:/var/www/html
+      - /var/www/html/vendor
       - engaja_uploads:/var/www/html/public/uploads
-      - engaja_sessions:/var/www/html/storage/sessions
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   scheduler:
-    image: gleidsonrocha/engaja-app:latest
-    pull_policy: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: engaja_scheduler
     environment:
-      DB_HOST: ""
+      DB_HOST: db
       DB_PORT: 3306
-      DB_NAME: ""
-      DB_USER: ""
-      DB_PASS: ""
+      DB_NAME: engaja
+      DB_USER: engaja
+      DB_PASS: engaja123
       TZ: America/Fortaleza
+
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
       MAIL_USER: monitoramento@engajacomunicacao.com.br
-      MAIL_PASS: ""
+      MAIL_PASS: "prar uzta hizw ewgf"
       MAIL_FROM_EMAIL: monitoramento@engajacomunicacao.com.br
       MAIL_FROM_NAME: "Engaja Comunicação"
     volumes:
+      - ./:/var/www/html
+      - /var/www/html/vendor
       - engaja_uploads:/var/www/html/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
     command: >
       sh -lc "mkdir -p /var/www/html/storage &&
@@ -54,6 +66,29 @@ services:
                 sleep 60;
               done"
 
+  db:
+    image: mysql:8.0
+    container_name: engaja_db
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: engaja
+      MYSQL_USER: engaja
+      MYSQL_PASSWORD: engaja123
+      MYSQL_ROOT_PASSWORD: root123
+      TZ: America/Sao_Paulo
+    ports:
+      - "3306:3306"
+    volumes:
+      - engaja_dbdata:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+
 volumes:
+  engaja_dbdata:
   engaja_uploads:
-  engaja_sessions:
