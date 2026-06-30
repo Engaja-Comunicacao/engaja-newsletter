@@ -63,7 +63,7 @@ $rows = db()->query('
             <?php 
               if($r['status'] == "sent"){
             ?>
-                <div class="w-16 block uppercase leading-5 duration-150 text-xs rounded-sm border px-1.5 font-bold bg-green-500 text-white">
+                <div class="inline-block uppercase leading-5 duration-150 text-xs rounded-sm border px-1.5 font-bold bg-green-500 text-white">
                 Enviado
               </div>
             <?php
@@ -72,7 +72,7 @@ $rows = db()->query('
             <?php 
               if($r['status'] == "draft"){
             ?>
-                <div class="w-21 block uppercase leading-5 duration-150 text-xs rounded-sm border px-1.5 font-bold bg-blue-500 text-white">
+                <div class="inline-block uppercase leading-5 duration-150 text-xs rounded-sm border px-1.5 font-bold bg-blue-500 text-white">
                 Rascunho
               </div>
             <?php
@@ -81,7 +81,7 @@ $rows = db()->query('
             <?php 
               if($r['status'] == "failed"){
             ?>
-                <div class="w-16 block uppercase leading-5 duration-150 text-xs rounded-sm border px-1.5 font-bold bg-red-500 text-white">
+                <div class="inline-block uppercase leading-5 duration-150 text-xs rounded-sm border px-1.5 font-bold bg-red-500 text-white">
                 Falhou
               </div>
             <?php

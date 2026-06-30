@@ -1,7 +1,28 @@
 services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: engajaroot2024
+      MYSQL_DATABASE: engaja
+      MYSQL_USER: engaja
+      MYSQL_PASSWORD: engajapass2024
+    volumes:
+      - engaja_mysql_data:/var/lib/mysql
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   web:
     image: gleidsonrocha/engaja-app:latest
     pull_policy: always
+    depends_on:
+      db:
+        condition: service_healthy
     expose:
       - "80"
     labels:
@@ -10,11 +31,11 @@ services:
     environment:
       APP_URL: "https://newsletter.engajacomunicacao.com.br"
       APP_CRYPT_KEY: ""
-      DB_HOST: ""
+      DB_HOST: "db"
       DB_PORT: 3306
-      DB_NAME: ""
-      DB_USER: ""
-      DB_PASS: ""
+      DB_NAME: "engaja"
+      DB_USER: "engaja"
+      DB_PASS: "engajapass2024"
       TZ: America/Fortaleza
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
@@ -24,18 +45,20 @@ services:
       MAIL_FROM_NAME: "Engaja Comunicação"
     volumes:
       - engaja_uploads:/var/www/html/public/uploads
-      - engaja_sessions:/var/www/html/storage/sessions
     restart: unless-stopped
 
   scheduler:
     image: gleidsonrocha/engaja-app:latest
     pull_policy: always
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      DB_HOST: ""
+      DB_HOST: "db"
       DB_PORT: 3306
-      DB_NAME: ""
-      DB_USER: ""
-      DB_PASS: ""
+      DB_NAME: "engaja"
+      DB_USER: "engaja"
+      DB_PASS: "engajapass2024"
       TZ: America/Fortaleza
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
@@ -56,4 +79,4 @@ services:
 
 volumes:
   engaja_uploads:
-  engaja_sessions:
+  engaja_mysql_data:

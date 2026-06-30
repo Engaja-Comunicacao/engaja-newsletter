@@ -23,5 +23,8 @@ storage/
 *.DS_Store
 Thumbs.db
 
+# Scripts de inicialização do banco (só o container MySQL precisa)
+initdb/
+
 # Logs locais
 *.log

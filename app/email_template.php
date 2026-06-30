@@ -132,15 +132,13 @@ function render_email_preview_html(int $newsletterId): string
 {
   [$n, $items] = get_newsletter_data($newsletterId);
 
-  $headerImg = $n['header_image_path']
-    ? url_join(APP_URL, $n['header_image_path'])
-    : url_join(APP_URL, '/assets/engaja.png');
+  $headerImg = $n['header_image_path'] ?: '/assets/engaja.png';
 
-  $logoEngajaUrl = url_join(APP_URL, '/assets/engaja.png');
-  $rede1Url = url_join(APP_URL, '/assets/rede1.png');
-  $rede2Url = url_join(APP_URL, '/assets/rede2.png');
-  $rede3Url = url_join(APP_URL, '/assets/rede3.png');
-  $rede4Url = url_join(APP_URL, '/assets/rede4.png');
+  $logoEngajaUrl = '/assets/engaja.png';
+  $rede1Url = '/assets/rede1.png';
+  $rede2Url = '/assets/rede2.png';
+  $rede3Url = '/assets/rede3.png';
+  $rede4Url = '/assets/rede4.png';
 
   $socials = [
     ['url' => trim((string) ($n['social_1_url'] ?? '')), 'icon' => $rede1Url],

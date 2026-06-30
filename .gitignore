@@ -37,6 +37,9 @@ tmp/
 storage/
 sessions/
 
+# === Desenvolvimento local ===
+docker-compose.override.yml
+
 # === Apache/Nginx local ===
 .htaccess.local
 *.pid
