@@ -31,7 +31,11 @@ services:
       - "80"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.services.web.loadbalancer.server.port=80"
+      - "traefik.http.routers.engaja-web.rule=Host(`newsletter.engajacomunicacao.com.br`)"
+      - "traefik.http.routers.engaja-web.entrypoints=https"
+      - "traefik.http.routers.engaja-web.tls=true"
+      - "traefik.http.routers.engaja-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.engaja-web.loadbalancer.server.port=80"
     environment:
       APP_URL: "https://newsletter.engajacomunicacao.com.br"
       APP_CRYPT_KEY: "KlEGVWdZ36cE/9jUi0flVBMW91Oigo55iZx2MFYiNdDWi8maRAENBlaip9L6YHa5"
