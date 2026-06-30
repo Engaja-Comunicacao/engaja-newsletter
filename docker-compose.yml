@@ -29,13 +29,9 @@ services:
         condition: service_healthy
     expose:
       - "80"
-    networks:
-      - default
-      - coolify
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.web.loadbalancer.server.port=80"
-      - "traefik.docker.network=coolify"
     environment:
       APP_URL: "https://newsletter.engajacomunicacao.com.br"
       APP_CRYPT_KEY: "KlEGVWdZ36cE/9jUi0flVBMW91Oigo55iZx2MFYiNdDWi8maRAENBlaip9L6YHa5"
@@ -85,11 +81,6 @@ services:
                 php /var/www/html/cron/send_scheduled.php >> /var/www/html/storage/cron.log 2>&1;
                 sleep 60;
               done"
-
-networks:
-  coolify:
-    external: true
-    name: coolify
 
 volumes:
   engaja_dbdata:
