@@ -13,8 +13,7 @@ vendor/
 docker-compose*.yml
 Dockerfile*
 
-# Uploads e storage gerados em runtime
-public/uploads/
+# Storage gerado em runtime
 storage/
 
 # Arquivos do editor e SO

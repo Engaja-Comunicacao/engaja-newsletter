@@ -25,10 +25,12 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
 WORKDIR /var/www/html
 COPY . .
 
-# Permissões para uploads
+# Permissões e seed de uploads
+# uploads-seed: cópia das imagens da imagem para semear o volume na 1ª inicialização
 RUN mkdir -p public/uploads/headers public/uploads/pdfs \
  && chown -R www-data:www-data public/uploads \
- && chmod -R 775 public/uploads
+ && chmod -R 775 public/uploads \
+ && cp -r /var/www/html/public/uploads /var/www/html/uploads-seed
 
 # Instala dependências PHP (se existir composer.json)
 RUN if [ -f composer.json ]; then composer install --no-interaction --prefer-dist; fi
@@ -57,3 +59,8 @@ RUN { \
 } > /usr/local/etc/php/conf.d/engaja.ini
 
 EXPOSE 80
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["apache2-foreground"]

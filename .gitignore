@@ -21,10 +21,8 @@ app/config.php.bak
 # Se você quiser manter config.php fora do git (recomendado):
 # app/config.php
 
-# === Uploads (arquivos gerados) ===
-/public/uploads/
-/public/uploads/headers/*
-/public/uploads/pdfs/*
+# === Uploads ===
+# Incluídos no git para serem baked na imagem Docker e deployados no Coolify
 !/public/uploads/.gitkeep
 !/public/uploads/headers/.gitkeep
 !/public/uploads/pdfs/.gitkeep
