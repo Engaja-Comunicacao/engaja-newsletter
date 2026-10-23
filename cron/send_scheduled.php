@@ -36,7 +36,10 @@ foreach ($rows as $r) {
 
     $subject = "Radar de Notícias - {$dateStr} - " . ($n['company_name'] ?? 'Engaja');
 
-    send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds']);
+    // SMTP por empresa (se configurado)
+    $smtp = company_smtp_config($n);
+
+    send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds'], $smtp);
 
     $pdo->prepare("UPDATE newsletters SET status='sent', sent_at=NOW() WHERE id=?")->execute([$id]);
   } catch (Throwable $t) {

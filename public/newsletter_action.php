@@ -101,21 +101,7 @@ if ($action === 'send_now') {
     $subject = "Radar de Notícias - {$dateStr} - " . ($n['company_name'] ?? 'Engaja');
 
     // SMTP por empresa (se configurado)
-    $smtp = null;
-    if (!empty($n['smtp_enabled'])) {
-      $smtpPass = decrypt_secret($n['smtp_pass_enc'] ?? '');
-
-      $smtp = [
-        'enabled'    => true,
-        'host'       => (string)($n['smtp_host'] ?? ''),
-        'port'       => (int)($n['smtp_port'] ?? 587),
-        'user'       => (string)($n['smtp_user'] ?? ''),
-        'pass'       => (string)$smtpPass,
-        'secure'     => (string)($n['smtp_secure'] ?? 'tls'),
-        'from_email' => (string)($n['smtp_from_email'] ?? ''),
-        'from_name'  => (string)($n['smtp_from_name'] ?? ''),
-      ];
-    }
+    $smtp = company_smtp_config($n);
 
     // ENVIO (com embeds)
     send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds'], $smtp);

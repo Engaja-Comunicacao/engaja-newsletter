@@ -5,6 +5,25 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 
+/**
+ * Monta a config SMTP da empresa a partir da linha da newsletter (get_newsletter_data).
+ * Retorna null se a empresa não usa SMTP próprio.
+ */
+function company_smtp_config(array $n): ?array {
+  if (empty($n['smtp_enabled'])) return null;
+
+  return [
+    'enabled'    => true,
+    'host'       => (string)($n['smtp_host'] ?? ''),
+    'port'       => (int)($n['smtp_port'] ?? 587),
+    'user'       => (string)($n['smtp_user'] ?? ''),
+    'pass'       => decrypt_secret($n['smtp_pass_enc'] ?? ''),
+    'secure'     => (string)($n['smtp_secure'] ?? 'tls'),
+    'from_email' => (string)($n['smtp_from_email'] ?? ''),
+    'from_name'  => (string)($n['smtp_from_name'] ?? ''),
+  ];
+}
+
 function send_newsletter_email(
   string $subject,
   string $html,
@@ -34,7 +53,14 @@ function send_newsletter_email(
     $host = trim((string)($smtp['host'] ?? ''));
     $user = trim((string)($smtp['user'] ?? ''));
     $pass = (string)($smtp['pass'] ?? '');
-    if ($enabled && $host !== '' && $user !== '' && $pass !== '') {
+    if ($enabled) {
+      // Empresa marcou SMTP próprio: não cair silenciosamente no SMTP da Engaja
+      if ($host === '' || $user === '') {
+        throw new RuntimeException('SMTP da empresa habilitado, mas Host/Usuário não preenchidos.');
+      }
+      if ($pass === '') {
+        throw new RuntimeException('SMTP da empresa habilitado, mas a senha não pôde ser lida (APP_CRYPT_KEY ausente/diferente). Salve a senha novamente no cadastro da empresa.');
+      }
       $useCompany = true;
     }
   }
