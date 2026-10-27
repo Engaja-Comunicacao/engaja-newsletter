@@ -69,6 +69,7 @@ CREATE TABLE newsletters (
 
   send_at DATETIME NULL,
   sent_at DATETIME NULL,
+  sent_via VARCHAR(255) NULL,
 
   mensagem TEXT NULL,
 

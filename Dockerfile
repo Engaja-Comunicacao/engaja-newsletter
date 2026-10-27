@@ -58,6 +58,10 @@ RUN { \
   echo "session.cookie_httponly=1"; \
 } > /usr/local/etc/php/conf.d/engaja.ini
 
+# Versão (commit) exibida no rodapé e registrada em cada envio
+ARG APP_VERSION=dev
+ENV APP_VERSION=${APP_VERSION}
+
 EXPOSE 80
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh

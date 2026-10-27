@@ -39,10 +39,14 @@ foreach ($rows as $r) {
     // SMTP por empresa (se configurado)
     $smtp = company_smtp_config($n);
 
-    send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds'], $smtp);
+    $via = send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds'], $smtp);
+    $via .= ' | agendador v' . APP_VERSION;
 
-    $pdo->prepare("UPDATE newsletters SET status='sent', sent_at=NOW() WHERE id=?")->execute([$id]);
+    ensure_sent_via_column($pdo);
+    $pdo->prepare("UPDATE newsletters SET status='sent', sent_at=NOW(), sent_via=? WHERE id=?")->execute([$via, $id]);
+    echo date('Y-m-d H:i:s') . " newsletter #{$id} enviada: {$via}\n";
   } catch (Throwable $t) {
     $pdo->prepare("UPDATE newsletters SET status='failed', error_message=? WHERE id=?")->execute([$t->getMessage(), $id]);
+    echo date('Y-m-d H:i:s') . " newsletter #{$id} falhou: " . $t->getMessage() . "\n";
   }
 }

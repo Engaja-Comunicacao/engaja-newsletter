@@ -15,6 +15,9 @@ function env_int(string $key, int $default = 0): int {
 // ===== APP =====
 define('APP_URL', rtrim(env_str('APP_URL', 'http://localhost:8080'), '/'));
 
+// Versão (commit) gravada na imagem pelo build do GitHub Actions
+define('APP_VERSION', substr(env_str('APP_VERSION', 'dev'), 0, 7));
+
 // Timezone
 $tz = env_str('TZ', 'America/Fortaleza');
 date_default_timezone_set($tz);

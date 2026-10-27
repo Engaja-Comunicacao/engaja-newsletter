@@ -1,15 +1,17 @@
 <?php
 require_once __DIR__ . '/../app/auth.php';
 require_once __DIR__ . '/../app/helpers.php';
+require_once __DIR__ . '/../app/mailer.php';
 require_login();
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 if (!$id)
   redirect('newsletters.php');
 
+ensure_sent_via_column(db());
 $st = db()->prepare('
   SELECT
-    n.status, n.error_message, n.send_at, n.sent_at, n.mensagem,
+    n.status, n.error_message, n.send_at, n.sent_at, n.sent_via, n.mensagem,
     u_send.name AS sent_by_name,
     u_create.name AS created_by_name
   FROM newsletters n
@@ -58,6 +60,7 @@ require_once __DIR__ . '/_header.php';
 
       <?php if (!empty($meta['sent_at'])): ?>
         | <strong>Enviado:</strong> <?= e($meta['sent_at']) ?>
+        | <strong>Enviado via:</strong> <?= !empty($meta['sent_via']) ? e($meta['sent_via']) : 'não registrado (enviado por versão antiga do sistema)' ?>
       <?php endif; ?>
 
       <?php

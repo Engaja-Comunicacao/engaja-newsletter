@@ -104,11 +104,13 @@ if ($action === 'send_now') {
     $smtp = company_smtp_config($n);
 
     // ENVIO (com embeds)
-    send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds'], $smtp);
+    $via = send_newsletter_email($subject, $payload['html'], $recipients, $payload['embeds'], $smtp);
+    $via .= ' | envio manual v' . APP_VERSION;
 
+    ensure_sent_via_column($pdo);
     $pdo->prepare("UPDATE newsletters
-      SET status='sent', sent_at=NOW(), sent_by_user_id=?
-      WHERE id=?")->execute([$userId, $id]);
+      SET status='sent', sent_at=NOW(), sent_by_user_id=?, sent_via=?
+      WHERE id=?")->execute([$userId, $via, $id]);
 
     $_SESSION['flash_success'] = 'Newsletter enviada com sucesso!';
     redirect('newsletters.php');

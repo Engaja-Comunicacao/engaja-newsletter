@@ -24,13 +24,31 @@ function company_smtp_config(array $n): ?array {
   ];
 }
 
+/**
+ * Garante a coluna newsletters.sent_via (bancos criados antes dela existir).
+ */
+function ensure_sent_via_column(PDO $pdo): void {
+  static $done = false;
+  if ($done) return;
+
+  $st = $pdo->query("SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'newsletters' AND COLUMN_NAME = 'sent_via'");
+  if ((int)$st->fetchColumn() === 0) {
+    $pdo->exec("ALTER TABLE newsletters ADD COLUMN sent_via VARCHAR(255) NULL AFTER sent_at");
+  }
+  $done = true;
+}
+
+/**
+ * Envia a newsletter e retorna por qual SMTP saiu (para registrar em newsletters.sent_via).
+ */
 function send_newsletter_email(
   string $subject,
   string $html,
   array $recipients,
   array $embeds,
   ?array $smtp = null
-): void {
+): string {
 
   $MAX_BCC_PER_EMAIL = 90;
 
@@ -132,4 +150,6 @@ function send_newsletter_email(
 
     $mail->send();
   }
+
+  return ($useCompany ? 'SMTP da empresa' : 'SMTP Engaja') . " ({$user} / {$host})";
 }
